@@ -178,7 +178,10 @@
   .two > div { display: grid; gap: 8px; align-content: start; }
   .two h4 { margin: 0; font-size: 1rem; }
   .mate { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: center; background: none; border: none; padding: 0; text-align: left; cursor: pointer; }
-  .mini { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 1.6rem; border: 2px solid var(--gold); background: var(--paper); box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--tc); }
+  .mini { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 1.6rem; border: 2px solid var(--gold); background: var(--gold-soft); box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--tc); overflow: hidden; }
+  .mini img, .tcell .e img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .figure { position: relative; height: 270px; width: auto; max-width: 80%; margin: -40px 0 6px; filter: drop-shadow(0 8px 10px var(--shade)); }
+  .dfig { height: 150px; width: auto; flex: none; filter: drop-shadow(0 4px 6px var(--shade)); }
   .mate b { font-family: var(--display); color: var(--tc); }
   .stack { grid-template-columns: minmax(0, 1fr) !important; }
   .radar-box { display: grid; gap: 8px; justify-items: center; text-align: center; }
@@ -215,10 +218,10 @@
   .reg p { margin: 0; font-size: .82rem; color: var(--sub); }
   .types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .tcell {
-    display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; align-items: center; text-align: left; padding: 8px 10px;
+    display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; align-items: center; text-align: left; padding: 8px 10px;
     border-radius: 6px; border: 1px solid var(--line); background: var(--bg); cursor: pointer;
   }
-  .tcell .e { font-size: 1.4rem; line-height: 1; text-align: center; }
+  .tcell .e { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: var(--gold-soft); border: 1px solid var(--tc); }
   .tcell b { display: block; font-family: var(--display); font-size: .9rem; color: var(--tc); line-height: 1.35; }
   .tcell small { font-size: .68rem; letter-spacing: .2em; color: var(--sub); }
   .tcell.me { border: 2px solid var(--tc); background: var(--paper); }
@@ -564,6 +567,9 @@ function flip(code, idx) {
   }).join("");
 }
 function regionOf(code) { return REGIONS[code[1] + code[2]]; }
+// 旅人のイラスト（全身と、顔まわりを切り出した丸い画像）
+function figureSrc(code) { return `images/travelers/${code}.webp`; }
+function faceImg(code) { return `<img src="images/travelers/${code}-face.webp" alt="${TYPES[code].name}" loading="eager">`; }
 
 // ============================================================
 // 画面
@@ -656,7 +662,7 @@ function partnerHTML(myCode, code, label) {
 function mateHTML(code, reason) {
   const t = TYPES[code];
   return `<button class="mate" type="button" data-code="${code}" style="--tc:${regionOf(code).color}">
-    <span class="mini">${t.e}</span>
+    <span class="mini">${faceImg(code)}</span>
     <span><b>${t.name}</b>（${code}）<small>${reason}</small></span></button>`;
 }
 
@@ -694,7 +700,7 @@ function finish() {
     const x = TYPES[code];
     const me = code === r.code || (!r.code && r.candidateCodes.includes(code));
     return `<button class="tcell${me ? " me" : ""}" type="button" data-code="${code}" style="--tc:${regionOf(code).color}">
-      <span class="e">${x.e}</span><span><b>${x.name}</b><small>${code}</small></span></button>`;
+      <span class="e">${faceImg(code)}</span><span><b>${x.name}</b><small>${code}</small></span></button>`;
   };
   const allTypes = Object.entries(REGIONS).map(([key, g]) => {
     const codes = Object.keys(TYPES).filter(c => c[1] + c[2] === key);
@@ -752,7 +758,7 @@ function finish() {
     top = `
     <div class="hero">
       <div class="scene"><img src="${scene}" alt="${reg.name}の風景"></div>
-      <div class="badge">${t.e}</div>
+      <img class="figure" src="${figureSrc(r.code)}" alt="${t.name}のイラスト">
       <span class="label">あなたのタイプは</span>
       <span class="pennant">${reg.name}</span>
       <span class="sub">${reg.sub}</span>
@@ -858,7 +864,7 @@ function openType(code) {
   d.style.setProperty("--tc", reg.color);
   d.innerHTML = `<div class="dlg">
     <div class="dscene"><img src="${reg.img}" alt=""></div>
-    <div class="top"><span class="mini">${t.e}</span>
+    <div class="top"><img class="dfig" src="${figureSrc(code)}" alt="${t.name}のイラスト">
       <div><span class="pennant">${reg.name}</span><h3>${t.name}</h3><span class="code">${code}</span></div></div>
     <p class="catch">${t.catch}</p>
     <p>${t.desc}</p>
