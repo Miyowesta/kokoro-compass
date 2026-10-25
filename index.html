@@ -109,22 +109,36 @@
   .qcard { padding: 36px 22px 28px; display: grid; gap: 30px; }
   .qtext { font-family: var(--display); font-weight: 700; font-size: clamp(1.2rem, 4.6vw, 1.5rem); text-align: center; margin: 0; min-height: 3em; display: grid; place-items: center; }
   .scale { display: grid; gap: 10px; }
-  .dots { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  /* 5つの選択肢：丸の大きさは変えず、押せる範囲は列全体（44px以上）。ラベルは常に表示 */
+  .dots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; align-items: start; }
   .dot {
     --c: var(--agree); --size: 44px;
-    width: var(--size); height: var(--size); border-radius: 50%; cursor: pointer;
-    border: 3px solid var(--c); background: transparent; padding: 0; flex: none;
+    display: grid; justify-items: center; align-content: start; grid-template-rows: 60px auto; gap: 6px;
+    min-height: 44px; padding: 4px 0 6px; border: none; border-radius: 10px; background: transparent;
+    cursor: pointer; font: inherit; color: var(--ink); -webkit-tap-highlight-color: transparent;
+  }
+  .dot .ring {
+    width: var(--size); height: var(--size); border-radius: 50%; align-self: center;
+    border: 3px solid var(--c); background: transparent;
     box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--gold-soft);
     transition: background .15s, transform .15s;
   }
+  .dot .lbl { font-size: clamp(.6rem, 2.8vw, .78rem); line-height: 1.35; text-align: center; color: var(--sub); white-space: nowrap; letter-spacing: 0; }
   .dot[data-v="2"], .dot[data-v="-2"] { --size: 56px; }
+  .dot[data-v="2"] .lbl, .dot[data-v="-2"] .lbl { font-weight: 700; font-family: var(--display); color: var(--c); }
   .dot[data-v="0"] { --c: var(--gold); --size: 34px; }
   .dot[data-v="-1"], .dot[data-v="-2"] { --c: var(--disagree); }
-  .dot:hover { transform: scale(1.06); }
-  .dot[aria-pressed="true"] { background: var(--c); }
-  .ends { display: flex; justify-content: space-between; font-size: .85rem; font-weight: 700; font-family: var(--display); }
-  .ends span:first-child { color: var(--agree); }
-  .ends span:last-child { color: var(--disagree); }
+  .dot:hover .ring { transform: scale(1.06); }
+  .dot:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .dot[aria-pressed="true"] .ring { background: var(--c); }
+  .dot[aria-pressed="true"] .lbl { color: var(--ink); font-weight: 700; }
+  .qlabel { text-align: center; font-size: .82rem; letter-spacing: .04em; color: var(--tc, var(--gold)); margin: 0 0 -18px; font-weight: 700; }
+  .choices { display: grid; gap: 12px; }
+  .choice { font: inherit; font-size: 1rem; text-align: left; padding: 14px 16px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; line-height: 1.6; }
+  .choice:hover { border-color: var(--gold); }
+  .choice[aria-pressed="true"] { border-color: var(--gold); background: var(--gold-soft); font-weight: 700; }
+  .near { display: grid; gap: 12px; }
+  .near p { margin: 0; }
   .chosen { text-align: center; font-size: .85rem; color: var(--sub); min-height: 1.5em; margin: 0; }
   .qnav { display: flex; justify-content: space-between; }
   .linkbtn { background: none; border: none; color: var(--sub); cursor: pointer; padding: 8px 4px; font-size: .9rem; }
@@ -179,7 +193,7 @@
   .two h4 { margin: 0; font-size: 1rem; }
   .mate { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: center; background: none; border: none; padding: 0; text-align: left; cursor: pointer; }
   .mini { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 1.6rem; border: 2px solid var(--gold); background: var(--gold-soft); box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--tc); overflow: hidden; }
-  .mini img, .tcell .e img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .figure { position: relative; height: 270px; width: auto; max-width: 80%; margin: -40px 0 6px; filter: drop-shadow(0 8px 10px var(--shade)); }
   .dfig { height: 150px; width: auto; flex: none; filter: drop-shadow(0 4px 6px var(--shade)); }
   .mate b { font-family: var(--display); color: var(--tc); }
@@ -209,20 +223,21 @@
   .note { font-size: .78rem; color: var(--sub); text-align: center; margin: 0; }
 
   /* 4つの地方 */
-  .regions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  @media (min-width: 620px) { .regions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .regions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; }
   .reg { display: grid; gap: 10px; align-content: start; }
   .reg .pic { aspect-ratio: 2 / 1; max-width: 100%; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); position: relative; }
+  @media (min-width: 620px) { .reg .pic { aspect-ratio: 3 / 1; } }
   .reg .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .reg .pic .pennant { position: absolute; left: 0; bottom: 10px; }
   .reg p { margin: 0; font-size: .82rem; color: var(--sub); }
-  .types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  @media (min-width: 620px) { .types { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
   .tcell {
-    display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; align-items: center; text-align: left; padding: 8px 10px;
-    border-radius: 6px; border: 1px solid var(--line); background: var(--bg); cursor: pointer;
+    display: grid; justify-items: center; gap: 6px; text-align: center; padding: 10px 8px 12px;
+    border-radius: 8px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; font: inherit; color: inherit;
   }
-  .tcell .e { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: var(--gold-soft); border: 1px solid var(--tc); }
-  .tcell b { display: block; font-family: var(--display); font-size: .9rem; color: var(--tc); line-height: 1.35; }
+  .tcell .fig { width: 100%; height: 160px; object-fit: contain; display: block; filter: drop-shadow(0 4px 6px rgb(40 30 10 / .18)); }
+  .tcell b { display: block; font-family: var(--display); font-size: .92rem; color: var(--tc); line-height: 1.35; }
   .tcell small { font-size: .68rem; letter-spacing: .2em; color: var(--sub); }
   .tcell.me { border: 2px solid var(--tc); background: var(--paper); }
 
@@ -244,11 +259,11 @@
   <!-- スタート画面 -->
   <section class="start" id="start">
     <h1 class="title-img"><img src="images/title.jpg" width="1600" height="840" alt="こころのコンパス診断　20の質問で、あなたの旅人タイプが見つかる。"></h1>
-    <p class="lead">20の質問に答えると、あなたの性格を4つの軸で測り、16タイプの「旅人」のどれに近いかを診断します。最後に、あなたの回答を読んだAIからのメッセージも届きます。</p>
+    <p class="lead">20の質問に答えると、あなたの性格を4つの軸で測り、16タイプの「旅人」のどれに近いかを診断します。最後に、希望すると、回答をもとにAIメッセージを作れます。</p>
     <div class="axes-intro" id="axesIntro"></div>
     <button class="btn" id="startBtn" type="button">診断をはじめる</button>
     <p class="meta">所要時間 約3分 ／ 直感で答えるのがコツです</p>
-    <p class="guide">普段、自由に選べる場面で、自分が自然に選びやすい方を思い浮かべてください。どちらの答えにも良し悪しはありません。</p>
+    <p class="guide">普段、自由に選べる場面で、自分が自然に選びやすい方を思い浮かべてください。どちらの答えにも良し悪しはありません。回答が半々になった軸があるときだけ、最後に2択の質問が出ます（最大4問）。</p>
   </section>
 
   <!-- 質問画面 -->
@@ -258,10 +273,11 @@
       <div class="bar"><i id="qbar" style="width:0%"></i></div>
     </div>
     <div class="qcard">
+      <p class="qlabel" id="qlabel" hidden>追加の質問</p>
       <p class="qtext" id="qtext"></p>
-      <div class="scale">
+      <div class="choices" id="choices" hidden></div>
+      <div class="scale" id="scale">
         <div class="dots" id="dots" role="group" aria-label="あてはまる度合い"></div>
-        <div class="ends"><span>そう思う</span><span>そう思わない</span></div>
         <p class="chosen" id="chosen"></p>
       </div>
     </div>
@@ -284,7 +300,7 @@
 // ============================================================
 const API_URL = "https://animal-shindan-api.miyowesta.workers.dev/seikaku";
 // 設問を変えたら、中継サーバー側の設問とあわせて、この名前も新しくする
-const QUESTIONNAIRE_VERSION = "questions-v2";
+const QUESTIONNAIRE_VERSION = "questions-v3";
 const AI_TIMEOUT_MS = 20000;   // AIの返事を待つ上限（仮）
 const SITE_URL = "https://miyowesta.github.io/kokoro-compass/";
 const HASHTAG = "こころのコンパス診断";
@@ -319,7 +335,7 @@ const QUESTIONS = [
   { t: "旅行では細かい予定を立てず、現地で行き先を決めたい。", axis: 3, dir: -1 },
   { t: "家でひとりの時間が続くと、誰かと話したくなる。", axis: 0, dir: +1 },
   { t: "新しいアプリや道具が出ると、自分も試してみたくなる。", axis: 1, dir: +1 },
-  { t: "正しいことでも、相手が傷つきそうなら、言い方や結論を考え直したい。", axis: 2, dir: -1 },
+  { t: "複数の案から選ぶときは、関係する人の気持ちへの影響を重視したい。", axis: 2, dir: -1 },
   { t: "やることがいくつかある日は、先に順番を決めてから動きたい。", axis: 3, dir: +1 },
   { t: "忙しい一週間のあとは、ひとりでのんびりするのがいちばんの休みだ。", axis: 0, dir: -1 },
   { t: "好きな曲や映画は、新しいものを探すより、お気に入りをくり返し楽しみたい。", axis: 1, dir: -1 },
@@ -329,11 +345,11 @@ const QUESTIONS = [
 
 // 5段階の答え（そう思う＝+2 … そう思わない＝-2）
 const SCALE = [
-  { v: 2, label: "そう思う" },
-  { v: 1, label: "ややそう思う" },
-  { v: 0, label: "どちらともいえない" },
-  { v: -1, label: "あまりそう思わない" },
-  { v: -2, label: "そう思わない" },
+  { v: 2, label: "そう思う", short: "そう<br>思う" },
+  { v: 1, label: "ややそう思う", short: "やや<br>そう思う" },
+  { v: 0, label: "どちらともいえない", short: "どちら<br>とも<br>いえない" },
+  { v: -1, label: "あまりそう思わない", short: "あまり<br>そう<br>思わない" },
+  { v: -2, label: "そう思わない", short: "そう<br>思わない" },
 ];
 
 // 地方（2文字目＝冒険/安定 と 3文字目＝論理/共感 の組み合わせ）
@@ -432,30 +448,41 @@ const TYPES = {
 // 採点（画面から切りはなした計算だけの部分）
 // answers: 20個の数字（+2〜-2）
 // ============================================================
-// 境界域：各軸の合計点がこの値以下（-2〜+2点＝40〜60%）なら左右を決めない（仮の基準）
-const BOUNDARY = 2;
+// 差が小さめ：各軸の合計点がこの値以下（±1〜2点）なら、主結果の判定には使ったうえで「差は小さめ」と補足する
+const CLOSE = 2;
 
-function scoreAnswers(answers) {
+// 0点の軸だけ出す追加の2択（同じ場面で、どちらを好むかを選ぶ）。L＝左側、R＝右側
+// 設問を変えたら、中継サーバー側の SEIKAKU_EXTRA とあわせて、EXTRA_VERSION も新しくする
+const EXTRA_VERSION = "extra-v1";
+const EXTRA_QUESTIONS = [
+  { t: "疲れがたまった週末。どちらかといえば、元気が戻りやすいのは？", L: "気の合う人と会って話す", R: "ひとりで好きなように過ごす" },
+  { t: "時間に余裕がある日。どちらかといえば、選びたいのは？", L: "まだ試したことのないことをする", R: "気に入っている、いつもの楽しみを味わう" },
+  { t: "何かを決めるとき。どちらかといえば、先に確かめたいのは？", L: "理由や根拠に筋が通っているか", R: "関係する人の気持ちに無理がないか" },
+  { t: "自由に過ごせる休日。どちらかといえば、心地よいのは？", L: "大まかな予定を先に決めておく", R: "そのときの気分で過ごし方を決める" },
+];
+
+// answers: 20個の数字（+2〜-2）、extra: 軸番号 → "L" / "R"（0点の軸の追加質問の答え）
+function scoreAnswers(answers, extra = {}) {
   const sums = [0, 0, 0, 0];
   const nonNeutral = [0, 0, 0, 0];   // 各軸で「どちらともいえない」以外に答えた数
   QUESTIONS.forEach((q, i) => {
     sums[q.axis] += answers[i] * q.dir;
     if (answers[i] !== 0) nonNeutral[q.axis]++;
   });
-  const axes = sums.map((s, k) => {
-    const leftPct = 50 + s * 5;                       // -10〜+10 点を 0〜100% に
-    const boundary = Math.abs(s) <= BOUNDARY;
-    const side = boundary ? null : s > 0 ? "L" : "R";
-    // 中立の状態：all＝5問すべて中立（傾向が出ていない）、split＝答えたが向きが分かれて0点、none＝それ以外
-    const neutral = nonNeutral[k] === 0 ? "all" : s === 0 ? "split" : "none";
-    return { sum: s, leftPct, boundary, side, nonNeutral: nonNeutral[k], neutral };
-  });
   const allNeutral = answers.every(a => a === 0);
-  // 境界ではない軸の条件に合う旅人だけを残す（境界の軸は左右どちらも可）
-  const candidateCodes = allNeutral ? [] : Object.keys(TYPES).filter(c =>
-    axes.every((a, k) => a.side === null || c[k] === AXES[k][a.side].c));
-  const code = candidateCodes.length === 1 ? candidateCodes[0] : null;
-  return { code, candidateCodes, axes, allNeutral };
+  const axes = sums.map((s, k) => {
+    const leftPct = 50 + s * 5;                       // -10〜+10 点を 0〜100% に（AIへの資料用）
+    const byExtra = s === 0;                          // 0点の軸は追加質問の答えで向きを決める
+    const side = s > 0 ? "L" : s < 0 ? "R" : (!allNeutral && (extra[k] === "L" || extra[k] === "R") ? extra[k] : null);
+    const close = s !== 0 && Math.abs(s) <= CLOSE;    // ±1〜2点：判定には使い、「差は小さめ」と補足
+    // 中立の状態：all＝5問すべて中立、split＝答えたが向きが分かれて0点、none＝それ以外
+    const neutral = nonNeutral[k] === 0 ? "all" : s === 0 ? "split" : "none";
+    return { sum: s, leftPct, side, close, byExtra, nonNeutral: nonNeutral[k], neutral };
+  });
+  // 追加質問が必要な軸（全問中立のときは出さない）
+  const extraAxes = allNeutral ? [] : axes.map((a, k) => a.byExtra ? k : -1).filter(k => k >= 0);
+  const code = !allNeutral && axes.every(a => a.side) ? axes.map((a, k) => AXES[k][a.side].c).join("") : null;
+  return { code, axes, extraAxes, allNeutral };
 }
 
 // ============================================================
@@ -472,7 +499,7 @@ const TRY_DEFAULT = "今日、心地よかった過ごし方を一言だけメ�
 
 // 各軸の「傾向の説明」と「根拠となる実際の回答」を返す
 // 回答の向き：answers[i] * dir がプラスなら左側、マイナスなら右側を支持（逆向きの質問に「そう思わない」も根拠になる）
-function buildResultInsights(answers, result) {
+function buildResultInsights(answers, result, extra = {}) {
   return result.axes.map((a, k) => {
     const ax = AXES[k], noun = AXIS_NOUN[k];
     const votes = QUESTIONS
@@ -487,33 +514,36 @@ function buildResultInsights(answers, result) {
         pole: (x.c > 0 ? ax.L : ax.R).name,
       }));
     const L = votes.filter(v => v.toward === "L"), R = votes.filter(v => v.toward === "R");
-    if (a.neutral === "all") {
-      return { k, kind: "neutral", text: `${noun}：今回は、この軸の傾向が出ていません`,
-        note: "5問すべて「どちらともいえない」でした。", evidence: [] };
+    const text = `${noun}：${trendPhrase(a, k)}`;
+    if (!a.side) {
+      return { k, kind: "neutral", text, note: "5問すべて「どちらともいえない」でした。", evidence: [] };
     }
-    if (!a.boundary) {
-      const text = `${noun}：${trendPhrase(a, k)}`;
-      return { k, kind: "side", text, note: "", evidence: (a.side === "L" ? L : R).slice(0, 2) };
+    const pole = ax[a.side].name;
+    if (a.byExtra) {
+      const ex = EXTRA_QUESTIONS[k];
+      const evidence = [L[0], R[0]].filter(Boolean);
+      evidence.push({ q: ex.t, label: ex[a.side], pole, extra: true });
+      return { k, kind: "extra", text,
+        note: (a.neutral === "all" ? "5問すべて「どちらともいえない」でした。" : "両方向の回答があり、合計は0点でした。") +
+          "この軸は追加質問で選んだ方向を反映しています。",
+        evidence };
     }
-    if (L.length && R.length) {
-      return { k, kind: "both", text: `${noun}：今回は、${ax.L.name}と${ax.R.name}の両側に近い回答でした`,
-        note: a.neutral === "split"
-          ? "はっきり答えた質問もありましたが、向きが分かれて打ち消し合いました。左右は決めていません。"
-          : "両方向の回答があり、合計が真ん中に近い境界域に入ったため、左右は決めていません。",
-        evidence: [L[0], R[0]] };
+    if (a.close) {
+      const both = L.length && R.length;
+      return { k, kind: "close", text,
+        note: (both ? "両方向の回答があり、差は小さめでした。" : "ほかの質問は「どちらともいえない」でした。") +
+          `主結果では${pole}側として判定しています。`,
+        evidence: both ? [L[0], R[0]] : votes.slice(0, 2) };
     }
-    const pole = (L.length ? ax.L : ax.R).name;
-    return { k, kind: "one", text: `${noun}：今回は、わずかに${pole}寄りの回答でしたが、傾向は小さめです`,
-      note: "ほかの質問は「どちらともいえない」でした。境界域のため、左右は決めていません。",
-      evidence: votes.slice(0, 2) };
+    return { k, kind: "side", text, note: "", evidence: (a.side === "L" ? L : R).slice(0, 2) };
   });
 }
 
-// 今日、試してみること：境界ではない軸のうち、回答の偏りがいちばん大きい軸から1つ（同点なら表示順で先の軸）
+// 今日、試してみること：回答の偏りがいちばん大きい軸から1つ（同点なら表示順で先の軸）。全軸0点なら共通の提案
 function pickTry(result) {
   let best = null;
   result.axes.forEach((a, k) => {
-    if (a.boundary) return;
+    if (a.sum === 0) return;
     if (best === null || Math.abs(a.sum) > Math.abs(result.axes[best].sum)) best = k;
   });
   if (best === null) return { text: TRY_DEFAULT, why: "" };
@@ -525,11 +555,35 @@ function pickTry(result) {
 // 軸ごとの傾向の言い方（4つの軸の欄と、判定の手がかりで共通に使う）
 function trendPhrase(a, k) {
   const ax = AXES[k], abs = Math.abs(a.sum);
-  if (a.neutral === "all") return "今回は、この軸の傾向が出ていません";
-  if (a.sum === 0) return "回答の向きが分かれ、合計は半々でした";
-  if (abs <= BOUNDARY) return "境界付近の回答でした";
+  if (!a.side) return "今回は、この軸の傾向が出ていません";
   const pole = ax[a.side].name;
+  if (a.byExtra) return a.neutral === "all"
+    ? `20問では傾向が出ず、追加質問で${pole}を選びました`
+    : `20問では半々で、追加質問で${pole}を選びました`;
+  if (a.close) return `今回は、わずかに${pole}寄りの回答でした（差は小さめ）`;
   return abs >= 6 ? `今回は、${pole}寄りの回答が目立ちました` : `今回は、やや${pole}寄りの回答でした`;
+}
+
+// 主結果の要約文（4つの軸の向きをつないだ1文）
+const SUMMARY_PART = [
+  { L: "人と過ごす時間で元気を取り戻しながら", R: "ひとりの時間を大切にしながら" },
+  { L: "新しいことに関心を持ち", R: "慣れたものを大切にし" },
+  { L: "理由や筋道を確かめ", R: "人の気持ちに目を向け" },
+  { L: "先に段取りを決める", R: "進めながら決める" },
+];
+function summaryText(result) {
+  return result.axes.map((a, k) => SUMMARY_PART[k][a.side]).join("、") + "方向の回答でした。";
+}
+// 僅差・追加質問の軸ごとの補足（その軸だけ逆側にした旅人も紹介する）
+function nearNotes(result) {
+  return result.axes.map((a, k) => {
+    if (!a.close && !a.byExtra) return null;
+    const ax = AXES[k], other = flip(result.code, [k]);
+    const head = a.byExtra
+      ? `${ax.L.name}と${ax.R.name}は、20問では${a.neutral === "all" ? "傾向が出ませんでした" : "半々でした"}。この軸は追加質問で選んだ方向を反映しています。`
+      : `${ax.L.name}と${ax.R.name}の差は小さめでした。`;
+    return { k, other, text: `${head}「${TYPES[other].name}」の説明にも、当てはまる部分があるかもしれません。` };
+  }).filter(Boolean);
 }
 
 // 旅の仲間との関わり方：コードを1文字ずつ比べて、共通点・違い・相談のヒントを作る（相性の良し悪しは判定しない）
@@ -576,8 +630,18 @@ function faceImg(code) { return `<img src="images/travelers/${code}-face.webp" a
 // ============================================================
 const $ = id => document.getElementById(id);
 const answers = new Array(QUESTIONS.length).fill(null);
-let current = 0;
+let extra = {};          // 追加質問の答え（軸番号 → "L" / "R"）
+let extraAxes = [];      // 今回、追加質問を出す軸（20問目のあとで決める）
+let current = 0;         // 0〜19＝本編、20以降＝追加質問
 let busy = false;
+let advanceTimer = null;  // 回答から次の質問へ進むまでの予約
+
+// 予約された「次へ進む」を取り消す（最初にもどる・開始し直すとき）
+function cancelAdvance() {
+  clearTimeout(advanceTimer);
+  advanceTimer = null;
+  busy = false;
+}
 
 function show(id) {
   ["start", "quiz", "result"].forEach(s => { $(s).hidden = s !== id; });
@@ -590,21 +654,54 @@ $("axesIntro").innerHTML = AXES.map(a =>
 
 // 5つの丸ボタン
 $("dots").innerHTML = SCALE.map(s =>
-  `<button class="dot" type="button" data-v="${s.v}" aria-label="${s.label}" aria-pressed="false"></button>`).join("");
+  `<button class="dot" type="button" data-v="${s.v}" aria-label="${s.label}" aria-pressed="false"><span class="ring" aria-hidden="true"></span><span class="lbl" aria-hidden="true">${s.short}</span></button>`).join("");
 $("dots").addEventListener("click", e => {
   const b = e.target.closest(".dot");
-  if (!b || busy) return;
-  busy = true;
+  if (!b || busy || current >= QUESTIONS.length) return;
   answers[current] = Number(b.dataset.v);
-  renderQuestion();
-  setTimeout(() => {
-    busy = false;
-    if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
-    else finish();
-  }, 260);
+  advance();
+});
+// 追加質問の2択
+$("choices").addEventListener("click", e => {
+  const b = e.target.closest(".choice");
+  if (!b || busy || current < QUESTIONS.length) return;
+  extra[extraAxes[current - QUESTIONS.length]] = b.dataset.side;
+  advance();
 });
 
+function advance() {
+  busy = true;
+  renderQuestion();
+  clearTimeout(advanceTimer);
+  advanceTimer = setTimeout(() => {
+    advanceTimer = null;
+    busy = false;
+    if (current === QUESTIONS.length - 1) {
+      // 20問目のあと：0点の軸だけ追加質問を出す（全問中立のときは出さない）
+      extraAxes = scoreAnswers(answers).extraAxes;
+    }
+    if (current < QUESTIONS.length - 1 + extraAxes.length) { current++; renderQuestion(); }
+    else finish();
+  }, 260);
+}
+
 function renderQuestion() {
+  const isExtra = current >= QUESTIONS.length;
+  $("scale").hidden = isExtra;
+  $("choices").hidden = !isExtra;
+  $("qlabel").hidden = !isExtra;
+  if (isExtra) {
+    const j = current - QUESTIONS.length, k = extraAxes[j], ex = EXTRA_QUESTIONS[k];
+    $("qnum").textContent = `追加の質問 ${j + 1} / ${extraAxes.length}`;
+    $("qpct").textContent = "";
+    $("qbar").style.width = "100%";
+    $("qlabel").textContent = `「${AXES[k].L.name}」と「${AXES[k].R.name}」のどちらとも決まらなかったので、もう一度選んでください`;
+    $("qtext").textContent = ex.t;
+    $("choices").innerHTML = ["L", "R"].map(side =>
+      `<button class="choice" type="button" data-side="${side}" aria-pressed="${extra[k] === side}">${ex[side]}</button>`).join("");
+    $("backBtn").disabled = false;
+    return;
+  }
   const q = QUESTIONS[current];
   $("qnum").textContent = `質問 ${current + 1} / ${QUESTIONS.length}`;
   const done = answers.filter(a => a !== null).length;
@@ -618,9 +715,9 @@ function renderQuestion() {
   $("backBtn").disabled = current === 0;
 }
 
-$("startBtn").onclick = () => { cancelAI(); answers.fill(null); current = 0; renderQuestion(); show("quiz"); };
+$("startBtn").onclick = () => { cancelAdvance(); cancelAI(); answers.fill(null); extra = {}; extraAxes = []; current = 0; renderQuestion(); show("quiz"); };
 $("backBtn").onclick = () => { if (current > 0 && !busy) { current--; renderQuestion(); } };
-$("homeBtn").onclick = () => { cancelAI(); show("start"); };
+$("homeBtn").onclick = () => { cancelAdvance(); cancelAI(); show("start"); };
 
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
@@ -667,15 +764,13 @@ function mateHTML(code, reason) {
 }
 
 function finish() {
-  const r = scoreAnswers(answers);
+  // 20問すべてと、必要な追加質問がそろっていなければ結果を出さない
+  if (answers.some(a => a === null)) return;
+  if (scoreAnswers(answers).extraAxes.some(k => extra[k] !== "L" && extra[k] !== "R")) return;
+  const r = scoreAnswers(answers, extra);
   const t = r.code ? TYPES[r.code] : null;
-  const n = r.candidateCodes.length;
-
-  // 色と風景：1タイプ、または候補が全部同じ地方ならその地方。ちがう地方にまたがるときは地図全体
-  const regKeys = [...new Set(r.candidateCodes.map(c => c[1] + c[2]))];
-  const reg = regKeys.length === 1 ? REGIONS[regKeys[0]] : null;
+  const reg = t ? regionOf(r.code) : null;
   const tc = reg ? reg.color : "var(--gold)";
-  const scene = reg ? reg.img : "images/title.jpg";
 
   const axisRows = r.axes.map((a, k) => {
     const ax = AXES[k];
@@ -683,9 +778,9 @@ function finish() {
     const leftOn = a.side === "L" ? ' style="color:var(--ink)"' : "";
     const rightOn = a.side === "R" ? ' style="color:var(--ink)"' : "";
     const phrase = trendPhrase(a, k);
-    const verdict = a.boundary
-      ? `<b>${phrase}</b><br><small>${ax.L.name}：${ax.L.desc}／${ax.R.name}：${ax.R.desc}</small>`
-      : `<b>${phrase}</b><br><small>${ax[a.side].name}：${ax[a.side].desc}</small>`;
+    const verdict = a.side
+      ? `<b>${phrase}</b><br><small>${ax[a.side].name}：${ax[a.side].desc}</small>`
+      : `<b>${phrase}</b><br><small>${ax.L.name}：${ax.L.desc}／${ax.R.name}：${ax.R.desc}</small>`;
     // バーは真ん中から、元の点数がプラスなら左へ、マイナスなら右へのびる
     return `<div class="axis">
       <div class="names"><span${leftOn}><b>${ax.L.name}</b> ${ax.L.c}</span>
@@ -698,9 +793,8 @@ function finish() {
 
   const cell = code => {
     const x = TYPES[code];
-    const me = code === r.code || (!r.code && r.candidateCodes.includes(code));
-    return `<button class="tcell${me ? " me" : ""}" type="button" data-code="${code}" style="--tc:${regionOf(code).color}">
-      <span class="e">${faceImg(code)}</span><span><b>${x.name}</b><small>${code}</small></span></button>`;
+    return `<button class="tcell${code === r.code ? " me" : ""}" type="button" data-code="${code}" style="--tc:${regionOf(code).color}">
+      <img class="fig" src="${figureSrc(code)}" alt="${x.name}のイラスト" loading="lazy"><span><b>${x.name}</b><small>${code}</small></span></button>`;
   };
   const allTypes = Object.entries(REGIONS).map(([key, g]) => {
     const codes = Object.keys(TYPES).filter(c => c[1] + c[2] === key);
@@ -717,13 +811,13 @@ function finish() {
     </div>`;
 
   // 今回の判定の手がかり（実際の回答をそのまま引用。折りたたみ）
-  const insights = buildResultInsights(answers, r);
+  const insights = buildResultInsights(answers, r, extra);
   const cluesCard = `
     <div class="card">
       <h3>今回の判定の手がかり</h3>
       <p class="hint">押すと、その軸の手がかりになった実際の回答が見られます。</p>
       ${insights.map(x => `<details class="clue"><summary>${x.text}</summary>
-        ${x.evidence.map(e => `<div class="quote"><p>「${esc(e.q)}」</p><p class="ans">→「${e.label}」<small>（${e.pole}側の手がかり）</small></p></div>`).join("")}
+        ${x.evidence.map(e => `<div class="quote"><p>${e.extra ? "追加質問：" : ""}「${esc(e.q)}」</p><p class="ans">→「${esc(e.label)}」<small>（${e.pole}側の手がかり）</small></p></div>`).join("")}
         ${x.note ? `<p class="hint">${x.note}</p>` : ""}
         ${x.kind !== "neutral" ? `<p class="hint">この軸は5問全体で集計しています。上記は、その手がかりとなった回答の一部です。</p>` : ""}
       </details>`).join("")}
@@ -736,6 +830,7 @@ function finish() {
       ${tr.why ? `<p class="hint">${tr.why}</p>` : ""}
     </div>`;
 
+  const sendNote = r.extraAxes.length ? "20問と追加質問の回答" : "20問の回答";
   const aiCard = r.allNeutral ? `
     <div class="card ai">
       <h3>AIからあなたへのメッセージ</h3>
@@ -743,28 +838,31 @@ function finish() {
     </div>` : `
     <div class="card ai">
       <h3>AIからあなたへのメッセージ</h3>
-      <p id="aiText" class="hint">20問の回答をもとに、AIがあなたへのメッセージを書きます。</p>
+      <p id="aiText" class="hint">${sendNote}をもとに、AIがあなたへのメッセージを書きます。</p>
       <div><button class="btn ghost" type="button" id="aiBtn">回答をもとにAIメッセージを作る</button></div>
-      <p class="hint" id="aiNote">メッセージの生成には、20問の回答を外部の生成サービスへ送信します。</p>
+      <p class="hint" id="aiNote">メッセージの生成には、${sendNote}を外部の生成サービスへ送信します。</p>
     </div>`;
 
   let top;
   if (t) {
-    // 1タイプに決まった
-    // 冒険／安定と論理／共感は同じで、社交／内省と計画／即興が異なる旅人
-    const sharedAxesType = flip(r.code, [0, 3]);
-    // 4つの軸がすべて異なる旅人
-    const differentAxesType = flip(r.code, [0, 1, 2, 3]);
+    // もっとも近い旅人を主結果として出し、僅差の軸は補足で伝える
+    const sharedAxesType = flip(r.code, [0, 3]);           // 冒険／安定と論理／共感が共通する旅人
+    const differentAxesType = flip(r.code, [0, 1, 2, 3]);  // 4つの軸がすべて異なる旅人
+    const notes = nearNotes(r);
     top = `
     <div class="hero">
-      <div class="scene"><img src="${scene}" alt="${reg.name}の風景"></div>
+      <div class="scene"><img src="${reg.img}" alt="${reg.name}の風景"></div>
       <img class="figure" src="${figureSrc(r.code)}" alt="${t.name}のイラスト">
-      <span class="label">あなたのタイプは</span>
+      <span class="label">今回の回答にもっとも近い旅人は</span>
       <span class="pennant">${reg.name}</span>
       <span class="sub">${reg.sub}</span>
       <h2>${t.name}</h2>
       <span class="code">${r.code}</span>
       <p class="catch">${t.catch}</p>
+    </div>
+    <div class="card near">
+      <p>${summaryText(r)}</p>
+      ${notes.map(n => `<p>${n.text}</p>${mateHTML(n.other, TYPES[n.other].catch)}`).join("")}
     </div>
     ${axesCard}
     ${cluesCard}
@@ -782,45 +880,15 @@ function finish() {
     </div>
     ${tryCard}
     ${aiCard}`;
-  } else if (n >= 2 && n <= 8) {
-    // 候補が2・4・8タイプ
-    const bAxes = r.axes.map((a, k) => a.boundary ? AXES[k] : null).filter(Boolean);
-    top = `
-    <div class="hero">
-      <div class="scene"><img src="${scene}" alt="${reg ? reg.name + "の風景" : "旅の地図"}"></div>
-      <div class="badge">🧭</div>
-      <span class="label">あなたの旅人は</span>
-      ${reg ? `<span class="pennant">${reg.name}</span>` : ""}
-      <h2>${n}タイプが候補です</h2>
-      <p class="catch">${bAxes.map(ax => `${ax.L.name}と${ax.R.name}`).join("、")}のあいだで、どちらとも決めきれない答えでした。</p>
-    </div>
-    <div class="card">
-      <h3>候補の旅人たち</h3>
-      <p class="note" style="text-align:left">並び順は順位ではありません。押すと、くわしい説明が見られます。</p>
-      <div style="display:grid;gap:14px">${r.candidateCodes.map(c => mateHTML(c, TYPES[c].catch)).join("")}</div>
-    </div>
-    <div class="card">
-      <h3>境界になった軸</h3>
-      <p>次の軸は、合計点が真ん中に近い「境界域」だったため、左右を決めていません。そのぶん候補が${n}つに分かれています。</p>
-      <ul class="list">${bAxes.map(ax => `<li><b>${ax.title}</b>（${ax.L.name}・${ax.R.name}）：今回の回答では、どちらとも決めていません</li>`).join("")}</ul>
-    </div>
-    ${axesCard}
-    ${cluesCard}
-    ${tryCard}
-    ${aiCard}`;
   } else {
-    // 全4軸が境界（16候補）／全問中立
-    const title = r.allNeutral ? "今回は傾向が出ていません" : "今回は旅人を絞れませんでした";
-    const msg = r.allNeutral
-      ? "20問すべてが「どちらともいえない」だったため、今回は傾向が出ていません。少し時間をおいて、直感で答えてみると結果が出やすくなります。"
-      : "4つの軸すべてが、合計点が真ん中に近い境界域だったため、16タイプのどれにも絞れませんでした。今回の回答だけでは、どの方向にも決めていません。";
+    // 全20問が中立：判断材料がないので、再回答を案内する
     top = `
     <div class="hero">
       <div class="scene"><img src="images/title.jpg" alt="旅の地図"></div>
       <div class="badge">🧭</div>
-      <h2>${title}</h2>
+      <h2>今回は傾向が出ていません</h2>
     </div>
-    <div class="card"><p>${msg}</p></div>
+    <div class="card"><p>20問すべてが「どちらともいえない」だったため、今回は旅人を選ぶ材料がありませんでした。普段の具体的な場面を思い浮かべて、もう一度答えてみてください。</p></div>
     ${axesCard}
     ${cluesCard}
     ${tryCard}
@@ -843,14 +911,10 @@ function finish() {
     </div>
     <p class="note">この診断は楽しむためのものです。人の性格は、日によっても場面によっても変わります。</p>`;
 
-  let text;
-  if (t) text = `私は「${t.name}」（${r.code}）タイプでした！\n${t.catch}`;
-  else if (n >= 2 && n <= 4) text = `私は${r.candidateCodes.map(c => `「${TYPES[c].name}」`).join("")}の${n}タイプが候補になりました！`;
-  else if (n === 8) text = `私は8タイプが候補になりました！`;
-  else text = `こころのコンパス診断をやってみました！`;
+  let text = t ? `私にもっとも近い旅人は「${t.name}」（${r.code}）でした！\n${t.catch}` : `こころのコンパス診断をやってみました！`;
   text += `\n#${HASHTAG}`;
   $("shareX").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent(SITE_URL);
-  $("retry").onclick = () => { cancelAI(); show("start"); };
+  $("retry").onclick = () => { cancelAdvance(); cancelAI(); show("start"); };
   if ($("aiBtn")) $("aiBtn").onclick = () => askAI();
   res.querySelectorAll("[data-code]").forEach(b => b.addEventListener("click", () => openType(b.dataset.code)));
 
@@ -878,17 +942,21 @@ function openType(code) {
 $("dlg").addEventListener("click", e => { if (e.target === $("dlg")) $("dlg").close(); });
 
 // ============================================================
-// AIメッセージ（ボタンを押したときだけ。20問の回答をそのまま送る）
+// AIメッセージ（ボタンを押したときだけ。20問と追加質問の回答をそのまま送る）
 // ============================================================
 const aiCache = new Map();   // 同じ回答のメッセージは、ページを開いている間は使い回す
 let aiController = null;
 let aiRequestId = 0;         // 新しい診断や送信のたびに増やし、古い返事を表示しない
 
-function buildAIPayload(list) {
+// 送る内容：20問の回答と、0点の軸で出した追加質問の答え（判定は中継サーバー側でも同じ方法でやり直す）
+function buildAIPayload(list, ex) {
+  const zero = scoreAnswers(list).extraAxes;
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     questionnaireVersion: QUESTIONNAIRE_VERSION,
+    extraVersion: EXTRA_VERSION,
     answers: list.map((value, index) => ({ questionId: index + 1, value })),
+    extraAnswers: zero.map(k => ({ axisId: k + 1, choice: ex[k] })),
   };
 }
 
@@ -905,7 +973,8 @@ function showAIMessage(message) {
 }
 
 async function askAI() {
-  const key = QUESTIONNAIRE_VERSION + ":" + answers.join(",");
+  const payload = buildAIPayload(answers, extra);
+  const key = JSON.stringify(payload);
   if (aiCache.has(key)) { showAIMessage(aiCache.get(key)); return; }
 
   cancelAI();
@@ -922,7 +991,7 @@ async function askAI() {
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(buildAIPayload(answers)),
+      body: JSON.stringify(payload),
       signal: ctrl.signal,
     });
     const data = await res.json();
