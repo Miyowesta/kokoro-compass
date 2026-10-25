@@ -139,6 +139,7 @@
   .choice[aria-pressed="true"] { border-color: var(--gold); background: var(--gold-soft); font-weight: 700; }
   .near { display: grid; gap: 12px; }
   .near p { margin: 0; }
+  .near-more > .near { margin-top: 10px; }
   .chosen { text-align: center; font-size: .85rem; color: var(--sub); min-height: 1.5em; margin: 0; }
   .qnav { display: flex; justify-content: space-between; }
   .linkbtn { background: none; border: none; color: var(--sub); cursor: pointer; padding: 8px 4px; font-size: .9rem; }
@@ -807,7 +808,7 @@ function finish() {
   const axesCard = `
     <div class="card">
       <h3>回答から見えた4つの傾向</h3>
-      <div class="chart-wrap"><div class="radar-box">${radarSVG(r.axes)}<p class="hint">図は、今回の回答が各軸のどちらに寄ったかを表しています。能力の高さや、診断の正確さを示すものではありません。</p></div><div style="display:grid;gap:16px;min-width:0">${axisRows}</div></div>
+      <div class="chart-wrap"><div class="radar-box">${radarSVG(r.axes)}<p class="hint">図は最初の20問の回答傾向を表しています。追加質問の回答は、旅人タイプの判定に反映しています。能力の高さや、診断の正確さを示すものではありません。</p></div><div style="display:grid;gap:16px;min-width:0">${axisRows}</div></div>
     </div>`;
 
   // 今回の判定の手がかり（実際の回答をそのまま引用。折りたたみ）
@@ -862,7 +863,9 @@ function finish() {
     </div>
     <div class="card near">
       <p>${summaryText(r)}</p>
-      ${notes.map(n => `<p>${n.text}</p>${mateHTML(n.other, TYPES[n.other].catch)}`).join("")}
+      ${notes.length ? `<details class="clue near-more"><summary>近い傾向の旅人も見る</summary>
+        <div class="near">${notes.map(n => `<p>${n.text}</p>${mateHTML(n.other, TYPES[n.other].catch)}`).join("")}</div>
+      </details>` : ""}
     </div>
     ${axesCard}
     ${cluesCard}
