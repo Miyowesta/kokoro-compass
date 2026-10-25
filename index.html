@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>こころのコンパス診断</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="20の質問に答えると、4つの軸からあなたの性格を16タイプの「旅人」で診断します。">
+<meta property="og:title" content="こころのコンパス診断">
+<meta property="og:description" content="20の質問で、あなたの旅人タイプが見つかる。">
+<meta property="og:image" content="https://miyowesta.github.io/kokoro-compass/images/title.jpg">
+<meta property="og:url" content="https://miyowesta.github.io/kokoro-compass/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  /* 古い旅の地図帳：羊皮紙の地に紺のインク、真鍮の金。4つの地方はタイトル画像の旗の色 */
+  :root {
+    --bg: #efe5cf;          /* 羊皮紙 */
+    --paper: #fbf6e9;       /* 明るい紙 */
+    --ink: #1f2c47;         /* 紺のインク */
+    --sub: #6b604b;         /* セピア */
+    --line: #dccba3;
+    --gold: #a97c2c;        /* 真鍮 */
+    --gold-soft: #e8d7ad;
+    --accent: #24375c;      /* ボタンの紺 */
+    --accent-ink: #f7ebcc;
+    --shade: rgb(110 80 30 / .14);
+    --north: #36598f;  --east: #b0526d;  --south: #3e7a4d;  --west: #9c7424;
+    --agree: #3e7a4d;  --disagree: #a5546f;
+    --display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #131b2b; --paper: #1c2537; --ink: #f0e6cc; --sub: #b9ac8e; --line: #3a4560;
+      --gold: #d9b062; --gold-soft: #3b3626; --accent: #d9b062; --accent-ink: #131b2b;
+      --shade: rgb(0 0 0 / .35);
+      --north: #8eb0e4; --east: #e897b0; --south: #86c597; --west: #e0bb68;
+      --agree: #86c597; --disagree: #e897b0;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131b2b; --paper: #1c2537; --ink: #f0e6cc; --sub: #b9ac8e; --line: #3a4560;
+    --gold: #d9b062; --gold-soft: #3b3626; --accent: #d9b062; --accent-ink: #131b2b;
+    --shade: rgb(0 0 0 / .35);
+    --north: #8eb0e4; --east: #e897b0; --south: #86c597; --west: #e0bb68;
+    --agree: #86c597; --disagree: #e897b0;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body {
+    background: radial-gradient(ellipse at 50% 30%, transparent 55%, var(--shade) 100%) fixed, var(--bg);
+    color: var(--ink); font-family: var(--body);
+    line-height: 1.8; font-size: 16px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 700px; margin: 0 auto; padding-block: 24px 72px; }
+  h1, h2, h3, h4 { font-family: var(--display); text-wrap: balance; font-weight: 700; line-height: 1.45; }
+  button { font: inherit; color: inherit; }
+  button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+  /* 真鍮の縁どりのボタン */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px 32px; border-radius: 999px; cursor: pointer; text-decoration: none;
+    background: var(--accent); color: var(--accent-ink); font-family: var(--display); font-weight: 700; font-size: 1.08rem;
+    border: 1px solid var(--gold); box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 4px var(--gold), 0 4px 12px var(--shade);
+    letter-spacing: .06em;
+  }
+  .btn.ghost { background: transparent; color: var(--ink); box-shadow: none; font-weight: 500; }
+  .label { font-size: .78rem; letter-spacing: .2em; color: var(--sub); font-weight: 700; }
+
+  /* 地図の紙（二重の細い枠） */
+  .card, .qcard, .axes-intro div, dialog {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 6px;
+    box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 5px var(--gold-soft), 0 2px 10px var(--shade);
+  }
+  .star { color: var(--gold); }
+  .orn { display: flex; align-items: center; gap: 12px; color: var(--gold); font-size: .9rem; }
+  .orn::before, .orn::after { content: ""; flex: 1; border-top: 1px dashed var(--gold); opacity: .6; }
+
+  /* ---------- スタート ---------- */
+  .start { display: grid; gap: 26px; justify-items: center; text-align: center; }
+  .start h1 { margin: 0; }
+  .start .title-img { width: 100%; line-height: 0; }
+  .title-img img { width: 100%; height: auto; border-radius: 8px; box-shadow: 0 8px 28px var(--shade); }
+  .start .lead { margin: 0; color: var(--sub); max-width: 34em; }
+  .axes-intro { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; text-align: center; }
+  .axes-intro div { padding: 14px 10px; }
+  .axes-intro b { display: block; font-family: var(--display); font-size: 1.05rem; }
+  .axes-intro span { font-size: .82rem; color: var(--sub); }
+  .meta { font-size: .85rem; color: var(--sub); margin: -10px 0 0; }
+  .guide { font-size: .85rem; color: var(--sub); margin: -18px 0 0; max-width: 30em; }
+
+  /* ---------- 質問 ---------- */
+  .quiz { display: grid; gap: 26px; }
+  .progress { display: grid; gap: 8px; }
+  .progress .row { display: flex; justify-content: space-between; align-items: baseline; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .progress .row span:first-child { font-family: var(--display); font-weight: 700; color: var(--ink); }
+  .bar { height: 6px; background: var(--gold-soft); border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-soft) 300%); border-radius: 99px; transition: width .3s; }
+  .qcard { padding: 36px 22px 28px; display: grid; gap: 30px; }
+  .qtext { font-family: var(--display); font-weight: 700; font-size: clamp(1.2rem, 4.6vw, 1.5rem); text-align: center; margin: 0; min-height: 3em; display: grid; place-items: center; }
+  .scale { display: grid; gap: 10px; }
+  .dots { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .dot {
+    --c: var(--agree); --size: 44px;
+    width: var(--size); height: var(--size); border-radius: 50%; cursor: pointer;
+    border: 3px solid var(--c); background: transparent; padding: 0; flex: none;
+    box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--gold-soft);
+    transition: background .15s, transform .15s;
+  }
+  .dot[data-v="2"], .dot[data-v="-2"] { --size: 56px; }
+  .dot[data-v="0"] { --c: var(--gold); --size: 34px; }
+  .dot[data-v="-1"], .dot[data-v="-2"] { --c: var(--disagree); }
+  .dot:hover { transform: scale(1.06); }
+  .dot[aria-pressed="true"] { background: var(--c); }
+  .ends { display: flex; justify-content: space-between; font-size: .85rem; font-weight: 700; font-family: var(--display); }
+  .ends span:first-child { color: var(--agree); }
+  .ends span:last-child { color: var(--disagree); }
+  .chosen { text-align: center; font-size: .85rem; color: var(--sub); min-height: 1.5em; margin: 0; }
+  .qnav { display: flex; justify-content: space-between; }
+  .linkbtn { background: none; border: none; color: var(--sub); cursor: pointer; padding: 8px 4px; font-size: .9rem; }
+  .linkbtn:disabled { opacity: .35; cursor: default; }
+
+  /* ---------- 結果 ---------- */
+  .result { display: grid; gap: 22px; }
+  .hero { text-align: center; display: grid; gap: 6px; justify-items: center; }
+  .scene { width: 100%; aspect-ratio: 2 / 1; max-width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: -64px;
+    -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent); }
+  .scene img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .badge {
+    position: relative; width: 116px; height: 116px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 3.4rem; background: var(--paper); border: 3px solid var(--gold);
+    box-shadow: 0 0 0 5px var(--paper), 0 0 0 7px var(--tc), 0 6px 18px var(--shade); margin-bottom: 14px;
+  }
+  .pennant {
+    display: inline-block; background: var(--tc); color: var(--paper); font-size: .8rem; font-weight: 700; letter-spacing: .12em;
+    padding: 3px 22px; clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 50%, 100% 100%, 0 100%, 10px 50%);
+  }
+  .hero .sub { font-size: .82rem; color: var(--sub); }
+  .hero h2 { font-size: clamp(2.1rem, 8.5vw, 2.8rem); margin: 4px 0 0; color: var(--tc); letter-spacing: .04em; }
+  .code { font-family: var(--display); letter-spacing: .35em; color: var(--gold); font-size: .95rem; font-weight: 700; }
+  .catch { font-family: var(--display); font-size: 1.12rem; margin: 6px 0 0; }
+  .card { padding: 24px 22px; display: grid; gap: 14px; min-width: 0; }
+  .card h3 { margin: 0; font-size: 1.18rem; }
+  .card h3::before, .two h4::before { content: "✦"; color: var(--gold); margin-right: 8px; font-size: .85em; }
+  .card p { margin: 0; }
+  .chart-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  @media (min-width: 620px) { .chart-wrap { grid-template-columns: 240px minmax(0, 1fr); align-items: center; } }
+  .radar { width: 100%; max-width: 260px; height: auto; justify-self: center; }
+  .radar .grid { fill: none; stroke: var(--gold-soft); }
+  .radar .grid.outer { stroke: var(--gold); }
+  .radar .spoke { stroke: var(--gold); stroke-dasharray: 2 4; opacity: .7; }
+  .radar .area { fill: var(--tc); fill-opacity: .2; stroke: var(--tc); stroke-width: 2; }
+  .radar .pt { fill: var(--tc); }
+  .radar text { fill: var(--sub); font-size: 11px; font-family: var(--body); }
+  .radar text.on { fill: var(--ink); font-weight: 700; }
+  .axis { display: grid; gap: 4px; }
+  .axis .names { display: flex; justify-content: space-between; font-size: .85rem; color: var(--sub); }
+  .axis .names b { color: inherit; font-family: var(--display); }
+  .split { position: relative; height: 10px; border-radius: 99px; background: var(--gold-soft); overflow: hidden; }
+  .split i { position: absolute; top: 0; bottom: 0; background: var(--tc); border-radius: 99px; }
+  .split::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; background: var(--paper); }
+  .axis .verdict { font-size: .85rem; font-variant-numeric: tabular-nums; }
+  .axis .verdict small { color: var(--sub); }
+  ul.list { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+  ul.list li::marker { color: var(--gold); }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  @media (min-width: 620px) { .two { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .two > div { display: grid; gap: 8px; align-content: start; }
+  .two h4 { margin: 0; font-size: 1rem; }
+  .mate { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: center; background: none; border: none; padding: 0; text-align: left; cursor: pointer; }
+  .mini { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 1.6rem; border: 2px solid var(--gold); background: var(--paper); box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--tc); }
+  .mate b { font-family: var(--display); color: var(--tc); }
+  .stack { grid-template-columns: minmax(0, 1fr) !important; }
+  .radar-box { display: grid; gap: 8px; justify-items: center; text-align: center; }
+  .partner { display: grid; gap: 10px; border-top: 1px dashed var(--line); padding-top: 14px; }
+  .partner dl { margin: 0 0 0 64px; display: grid; gap: 2px; font-size: .9rem; }
+  .partner dt { font-weight: 700; font-family: var(--display); color: var(--tc); margin-top: 6px; }
+  .partner dd { margin: 0; }
+  @media (max-width: 480px) { .partner dl { margin-left: 0; } }
+  .mate small { display: block; color: var(--sub); font-size: .82rem; line-height: 1.6; }
+  .ai p { white-space: pre-wrap; }
+  .hint { font-size: .82rem; color: var(--sub); margin: 0; }
+  details.clue { border-top: 1px dashed var(--line); padding-top: 10px; }
+  details.clue summary { cursor: pointer; font-weight: 700; list-style: none; position: relative; padding-left: 20px; }
+  details.clue summary::-webkit-details-marker { display: none; }
+  details.clue summary::before { content: "▸"; position: absolute; left: 2px; color: var(--gold); transition: transform .15s; }
+  details.clue[open] summary::before { transform: rotate(90deg); }
+  details.clue > :not(summary) { margin: 8px 0 0 20px; }
+  .quote { border-left: 3px solid var(--gold-soft); padding: 4px 0 4px 12px; display: grid; gap: 2px; }
+  .quote p { margin: 0; }
+  .quote .ans { font-weight: 700; }
+  .quote .ans small { font-weight: 400; color: var(--sub); margin-left: 4px; }
+  .try { font-family: var(--display); font-size: 1.12rem; font-weight: 700; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .share { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .note { font-size: .78rem; color: var(--sub); text-align: center; margin: 0; }
+
+  /* 4つの地方 */
+  .regions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  @media (min-width: 620px) { .regions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .reg { display: grid; gap: 10px; align-content: start; }
+  .reg .pic { aspect-ratio: 2 / 1; max-width: 100%; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); position: relative; }
+  .reg .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .reg .pic .pennant { position: absolute; left: 0; bottom: 10px; }
+  .reg p { margin: 0; font-size: .82rem; color: var(--sub); }
+  .types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tcell {
+    display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; align-items: center; text-align: left; padding: 8px 10px;
+    border-radius: 6px; border: 1px solid var(--line); background: var(--bg); cursor: pointer;
+  }
+  .tcell .e { font-size: 1.4rem; line-height: 1; text-align: center; }
+  .tcell b { display: block; font-family: var(--display); font-size: .9rem; color: var(--tc); line-height: 1.35; }
+  .tcell small { font-size: .68rem; letter-spacing: .2em; color: var(--sub); }
+  .tcell.me { border: 2px solid var(--tc); background: var(--paper); }
+
+  dialog { padding: 0; max-width: min(520px, calc(100vw - 32px)); color: var(--ink); }
+  dialog::backdrop { background: rgb(20 15 5 / .55); }
+  .dlg { display: grid; gap: 12px; padding-bottom: 22px; }
+  .dlg > :not(.dscene) { margin-inline: 22px; }
+  .dscene { aspect-ratio: 5 / 2; overflow: hidden; -webkit-mask-image: linear-gradient(#000 50%, transparent); mask-image: linear-gradient(#000 50%, transparent); margin-bottom: -40px; }
+  .dscene img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .dlg .top { display: flex; gap: 14px; align-items: center; }
+  .dlg h3 { margin: 0; color: var(--tc); font-size: 1.45rem; }
+  .dlg p { margin: 0; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- スタート画面 -->
+  <section class="start" id="start">
+    <h1 class="title-img"><img src="images/title.jpg" width="1600" height="840" alt="こころのコンパス診断　20の質問で、あなたの旅人タイプが見つかる。"></h1>
+    <p class="lead">20の質問に答えると、あなたの性格を4つの軸で測り、16タイプの「旅人」のどれに近いかを診断します。最後に、あなたの回答を読んだAIからのメッセージも届きます。</p>
+    <div class="axes-intro" id="axesIntro"></div>
+    <button class="btn" id="startBtn" type="button">診断をはじめる</button>
+    <p class="meta">所要時間 約3分 ／ 直感で答えるのがコツです</p>
+    <p class="guide">普段、自由に選べる場面で、自分が自然に選びやすい方を思い浮かべてください。どちらの答えにも良し悪しはありません。</p>
+  </section>
+
+  <!-- 質問画面 -->
+  <section class="quiz" id="quiz" hidden>
+    <div class="progress">
+      <div class="row"><span id="qnum">質問 1 / 20</span><span id="qpct">0%</span></div>
+      <div class="bar"><i id="qbar" style="width:0%"></i></div>
+    </div>
+    <div class="qcard">
+      <p class="qtext" id="qtext"></p>
+      <div class="scale">
+        <div class="dots" id="dots" role="group" aria-label="あてはまる度合い"></div>
+        <div class="ends"><span>そう思う</span><span>そう思わない</span></div>
+        <p class="chosen" id="chosen"></p>
+      </div>
+    </div>
+    <div class="qnav">
+      <button class="linkbtn" id="backBtn" type="button">← ひとつ戻る</button>
+      <button class="linkbtn" id="homeBtn" type="button">最初にもどる</button>
+    </div>
+  </section>
+
+  <!-- 結果画面 -->
+  <section class="result" id="result" hidden></section>
+
+</div>
+
+<dialog id="dlg"></dialog>
+
+<script>
+// ============================================================
+// 設定
+// ============================================================
+const API_URL = "https://animal-shindan-api.miyowesta.workers.dev/seikaku";
+// 設問を変えたら、中継サーバー側の設問とあわせて、この名前も新しくする
+const QUESTIONNAIRE_VERSION = "questions-v2";
+const AI_TIMEOUT_MS = 20000;   // AIの返事を待つ上限（仮）
+const SITE_URL = "https://miyowesta.github.io/kokoro-compass/";
+const HASHTAG = "こころのコンパス診断";
+
+// 4つの軸（左＝コードの1文字目に使う側）
+const AXES = [
+  { title: "エネルギーの向き", L: { c: "S", name: "社交", desc: "人と過ごすと気力が戻りやすい" }, R: { c: "Q", name: "内省", desc: "ひとりの時間で気力が戻りやすい" } },
+  { title: "新しいことへの姿勢", L: { c: "A", name: "冒険", desc: "新しいものを選びやすい" }, R: { c: "K", name: "安定", desc: "慣れたものを選びやすい" } },
+  { title: "決めるときの軸", L: { c: "L", name: "論理", desc: "根拠や筋道を優先しやすい" }, R: { c: "H", name: "共感", desc: "人の気持ちを優先しやすい" } },
+  { title: "物事の進め方", L: { c: "P", name: "計画", desc: "先に決めてから進めたい" }, R: { c: "F", name: "即興", desc: "進めながら決めたい" } },
+];
+
+// 20の質問。axis＝どの軸か、dir＝「そう思う」で左(+1)・右(-1)のどちらに寄るか
+// 各軸5問。肯定方向と逆方向の質問を混ぜている。
+// 好みや判断の傾向を尋ね、能力の高さは判定しない。
+// 社交↔内省：人との交流とひとりの時間の、どちらで気力を回復しやすいか
+// 冒険↔安定：自由に選べるとき、新しいものと慣れたもののどちらを好むか
+// 論理↔共感：判断するとき、根拠・基準と人の気持ちのどちらを優先しやすいか（両方使う前提で、優先しやすい視点）
+// 計画↔即興：先に決めることと、進めながら決めることのどちらを好むか
+const QUESTIONS = [
+  { t: "休みの日に人と会うと、元気が出てくる。", axis: 0, dir: +1 },
+  { t: "外食するときは、初めての店より、行きつけの店を選ぶことが多い。", axis: 1, dir: -1 },
+  { t: "何かを決めるときは、まず理由や根拠を確かめたい。", axis: 2, dir: +1 },
+  { t: "買い物に行く前に、買うものを決めておきたい。", axis: 3, dir: +1 },
+  { t: "にぎやかな集まりのあとは、ひとりで静かに過ごしたくなる。", axis: 0, dir: -1 },
+  { t: "出かけるなら、行ったことのない場所に行ってみたい。", axis: 1, dir: +1 },
+  { t: "みんなで何かを決めるときは、いやな思いをする人がいないかが気になる。", axis: 2, dir: -1 },
+  { t: "休日に何をするかは、朝起きてから決めることが多い。", axis: 3, dir: -1 },
+  { t: "落ちこんだときは、誰かに話を聞いてもらうと気持ちが軽くなる。", axis: 0, dir: +1 },
+  { t: "使い慣れた方法で困っていないなら、わざわざ変えなくていいと思う。", axis: 1, dir: -1 },
+  { t: "いくつかの案から選ぶときは、良い点と悪い点を並べて比べたい。", axis: 2, dir: +1 },
+  { t: "旅行では細かい予定を立てず、現地で行き先を決めたい。", axis: 3, dir: -1 },
+  { t: "家でひとりの時間が続くと、誰かと話したくなる。", axis: 0, dir: +1 },
+  { t: "新しいアプリや道具が出ると、自分も試してみたくなる。", axis: 1, dir: +1 },
+  { t: "正しいことでも、相手が傷つきそうなら、言い方や結論を考え直したい。", axis: 2, dir: -1 },
+  { t: "やることがいくつかある日は、先に順番を決めてから動きたい。", axis: 3, dir: +1 },
+  { t: "忙しい一週間のあとは、ひとりでのんびりするのがいちばんの休みだ。", axis: 0, dir: -1 },
+  { t: "好きな曲や映画は、新しいものを探すより、お気に入りをくり返し楽しみたい。", axis: 1, dir: -1 },
+  { t: "話し合いでは、その場の空気よりも、筋が通っているかを大事にしたい。", axis: 2, dir: +1 },
+  { t: "作業は、やりながら考えて進め方を変えていくほうがやりやすい。", axis: 3, dir: -1 },
+];
+
+// 5段階の答え（そう思う＝+2 … そう思わない＝-2）
+const SCALE = [
+  { v: 2, label: "そう思う" },
+  { v: 1, label: "ややそう思う" },
+  { v: 0, label: "どちらともいえない" },
+  { v: -1, label: "あまりそう思わない" },
+  { v: -2, label: "そう思わない" },
+];
+
+// 地方（2文字目＝冒険/安定 と 3文字目＝論理/共感 の組み合わせ）
+const REGIONS = {
+  AL: { name: "北の地方", sub: "知恵で道を切り開く旅人たち", color: "var(--north)", img: "images/region-north.jpg" },
+  AH: { name: "東の地方", sub: "理想と心で進む旅人たち", color: "var(--east)", img: "images/region-east.jpg" },
+  KH: { name: "南の地方", sub: "人とのつながりを守る旅人たち", color: "var(--south)", img: "images/region-south.jpg" },
+  KL: { name: "西の地方", sub: "確かさで支える旅人たち", color: "var(--west)", img: "images/region-west.jpg" },
+};
+
+// 16タイプ（設問で確かめている「好み・判断の傾向」の範囲で書く。能力の高さは断定しない）
+const TYPES = {
+  SALP: { name: "遠征隊長", e: "🧭", catch: "みんなを連れて、まだ見ぬ場所へ。",
+    desc: "人と過ごすことで元気が出て、新しいことに心が向きやすい旅人です。決めるときは理由や筋道を確かめ、動く前に段取りを決めておくことを好みます。新しい計画を立てて、仲間と一緒に進めていく場面で、持ち味が出やすいでしょう。",
+    good: ["判断の理由や基準を大切にする", "新しいことにも、段取りを決めてから取り組む", "人と一緒に進めることで元気が出る"],
+    care: ["予定どおりに進まないときは、途中で計画を見直す時間をとる", "周りの人のペースや気持ちも、ときどき確かめてみる", "動き続けたあとは、休む予定も入れておく"],
+    fit: ["新しい企画の立ち上げ", "旅行やイベントの計画づくり", "みんなで目標を決めて進めること"] },
+  SALF: { name: "旅の商人", e: "🐪", catch: "知らない町でも、まず歩き出してみる。",
+    desc: "人と過ごすことで元気が出て、新しいことを試すのが好きな旅人です。決めるときは筋道や根拠を大切にしながらも、細かな予定は決めず、その場の流れに合わせて動くことを好みます。",
+    good: ["新しいものを、まず試してみることを楽しむ", "理由や根拠を確かめてから決めることを大切にする", "予定が変わっても、その場で選び直すことを好む"],
+    care: ["大事な締め切りだけは、先に書き出しておく", "始めたことを、ひと区切りつくまで続けてみる", "決めた理由を、周りの人にも言葉で伝えてみる"],
+    fit: ["人と話しながら進める活動", "新しい商品やサービスを試して紹介すること", "予定を決めすぎない旅"] },
+  SAHP: { name: "祭りの座長", e: "🎪", catch: "みんなが笑顔になる場所を、つくりたい。",
+    desc: "人と過ごすことで元気が出て、新しい企画を考えるのが好きな旅人です。決めるときは関係する人の気持ちに目を向け、準備は先に決めてから進めることを好みます。みんなが楽しめる場をつくる場面で、持ち味が出やすいでしょう。",
+    good: ["関係する人の気持ちに目を向けて決める", "新しい企画を考えることを楽しむ", "先に準備を整えてから進めることを好む"],
+    care: ["人の期待に応えすぎていないか、ときどき振り返る", "予定を詰め込みすぎず、余白の時間を残す", "意見が分かれたときは、判断の基準も書き出してみる"],
+    fit: ["イベントや集まりの企画", "人に何かを教えたり紹介したりすること", "地域やコミュニティの活動"] },
+  SAHF: { name: "吟遊詩人", e: "🎻", catch: "心が動いたら、もう歩き出している。",
+    desc: "人と過ごすことで元気が出て、新しい出会いや経験に心が向きやすい旅人です。決めるときは人の気持ちに目を向け、予定はその場の流れで決めることを好みます。",
+    good: ["新しい出会いや体験を楽しむ", "人の気持ちを大切にして決める", "その場の流れに合わせて動くことを好む"],
+    care: ["大事な予定や締め切りだけは、メモに残しておく", "にぎやかな日が続いたら、休む日もつくる", "迷ったときは、理由を一つ書き出してから決めてみる"],
+    fit: ["話す・書く・演じるなどの表現", "人をもてなしたり、つないだりすること", "新しい体験を発信すること"] },
+  SKLP: { name: "宿場のまとめ役", e: "🏮", catch: "約束を守ることが、信頼のいちばんの近道。",
+    desc: "人と過ごすことで元気が出て、慣れた方法を大切にする旅人です。決めるときは根拠や基準を確かめ、先に段取りを決めて進めることを好みます。みんなで決まりごとをつくり、それに沿って進める場面で、持ち味が出やすいでしょう。",
+    good: ["慣れた方法や、決めた手順を大切にする", "判断の理由や基準を大切にする", "人と協力して進めることで元気が出る"],
+    care: ["ときには、新しいやり方を小さく試してみる", "基準だけでなく、相手の気持ちも聞いてみる", "予定が変わったときの、別の案も用意しておく"],
+    fit: ["集まりや仕組みの運営", "スケジュールの管理", "みんなの決まりごとを整える役割"] },
+  SKLF: { name: "街道の案内人", e: "🥾", catch: "困ったときは、まず自分が動いてみる。",
+    desc: "人と過ごすことで元気が出て、慣れた方法を大切にする旅人です。決めるときは筋道を重視し、細かな予定は決めず、状況に合わせて進めることを好みます。",
+    good: ["慣れた方法を生かして、その場で進め方を選ぶ", "筋道が通っているかを大切にする", "人と話しながら動くことで元気が出る"],
+    care: ["先の予定を、ときどき一度だけ見通してみる", "気持ちの話をされたら、まず聞くことから始めてみる", "慣れた方法以外の選択肢も、一つ調べてみる"],
+    fit: ["人を案内したり、手助けしたりすること", "体を動かす活動", "現場で手を動かす作業"] },
+  SKHP: { name: "宿屋の主人", e: "🏡", catch: "帰ってきたくなる場所を、守りたい。",
+    desc: "人と過ごすことで元気が出て、慣れた場所やつながりを大切にする旅人です。決めるときは人の気持ちに目を向け、行事や予定は先に決めておくことを好みます。",
+    good: ["人の気持ちに目を向けて決める", "慣れた場所や、昔からのつながりを大切にする", "予定を先に決めて準備することを好む"],
+    care: ["頼まれごとは、自分の予定と比べてから引き受ける", "自分の気持ちも、言葉にして伝えてみる", "たまには、行ったことのない場所に出かけてみる"],
+    fit: ["人のお世話やサポート", "お店や集まりの場づくり", "行事の準備"] },
+  SKHF: { name: "茶屋の店主", e: "🍵", catch: "今日を気持ちよく過ごせたら、それでいい。",
+    desc: "人とのおしゃべりで元気が出て、慣れた楽しみを大切にする旅人です。決めるときは人の気持ちに目を向け、予定はその場で選べる余地を残すことを好みます。",
+    good: ["人とのおしゃべりを楽しむ", "慣れた楽しみを、くり返し味わうことを大切にする", "相手の気持ちに目を向けて、その場で合わせることを好む"],
+    care: ["先の予定を、週に一度だけ見直してみる", "言いたいことがあるときは、短くても伝えてみる", "引き受けすぎていないか、ときどき振り返る"],
+    fit: ["人と話す活動", "料理や手づくりなど、五感を使うこと", "人を迎えて、もてなすこと"] },
+  QALP: { name: "地図職人", e: "🗺️", catch: "まだ誰も描いていない地図を、ひとりで描く。",
+    desc: "ひとりの時間で気力を整え、新しいことに心が向きやすい旅人です。決めるときは根拠や筋道を確かめ、先に計画を立ててから進めることを好みます。",
+    good: ["ひとりで考える時間を大切にする", "新しいことにも、計画を立ててから取り組む", "判断の理由や基準を大切にする"],
+    care: ["考えたことを、早めに人に話してみる", "計画は完璧になる前に、一度試してみる", "人の気持ちへの影響も、判断の材料に加えてみる"],
+    fit: ["仕組みや計画を考えること", "調べものや分析", "長い目標に向けた計画づくり"] },
+  QALF: { name: "からくり発明家", e: "⚙️", catch: "「なぜ？」と思ったら、分解してみたくなる。",
+    desc: "ひとりの時間で気力を整え、新しいものを試すのが好きな旅人です。決めるときは仕組みや筋道を大切にし、進め方はやりながら決めることを好みます。",
+    good: ["新しい道具や方法を試すことを楽しむ", "筋道や仕組みを確かめることを大切にする", "やりながら進め方を変えることを好む"],
+    care: ["試したことを、短くメモに残しておく", "気が進まない用事は、時間を決めて片づける", "考えに夢中なときも、周りの人に一声かける"],
+    fit: ["ものづくりやプログラミング", "調べものや実験", "新しいやり方を考えること"] },
+  QAHP: { name: "星読み", e: "🔭", catch: "見えない未来に、そっと道しるべを置く。",
+    desc: "ひとりの時間で気力を整え、新しい考えや先のことに心が向きやすい旅人です。決めるときは人の気持ちに目を向け、先に準備を整えて進めることを好みます。",
+    good: ["人の気持ちに目を向けて決める", "ひとりで静かに考える時間を大切にする", "新しいことにも、準備を整えてから取り組む"],
+    care: ["考えこみすぎたら、信頼できる人に話してみる", "理想と今の状況を、紙に書いて比べてみる", "判断の基準も、一つ書き出してみる"],
+    fit: ["人の話を聞くこと", "文章を書くことや、物語づくり", "長い目で人や物事を育てること"] },
+  QAHF: { name: "風の旅人", e: "🍃", catch: "心が惹かれるほうへ、風に乗って。",
+    desc: "ひとりの時間で気力を整え、心が惹かれる新しいものを追いかけるのが好きな旅人です。決めるときは人や自分の気持ちに目を向け、予定はその場の気分で選ぶことを好みます。",
+    good: ["自分の気持ちや感じ方を大切にする", "新しいものに出会うことを楽しむ", "その場の気分で選べる自由を大切にする"],
+    care: ["大事な手続きや締め切りだけは、先に書き出す", "気が向かない用事は、小さく分けて始めてみる", "迷ったときは、理由も一つ言葉にしてみる"],
+    fit: ["絵・音楽・写真などの表現", "自分のペースで進める活動", "新しい場所を歩いて記録すること"] },
+  QKLP: { name: "灯台守", e: "🗼", catch: "毎晩同じ灯りをともすことが、誰かを守っている。",
+    desc: "ひとりの時間で気力を整え、慣れた方法を大切にする旅人です。決めるときは事実や根拠を確かめ、先に順番を決めて進めることを好みます。",
+    good: ["慣れた方法や、決めた手順を大切にする", "事実や根拠を確かめて決める", "先に順番を決めて、こつこつ進めることを好む"],
+    care: ["予定が変わったときの、別の案も用意しておく", "気持ちを言葉にする機会を、ときどきつくる", "新しいやり方を、小さく一つ試してみる"],
+    fit: ["記録や整理", "知識をこつこつ積み上げること", "決まりや手順を整える役割"] },
+  QKLF: { name: "腕利きの職人", e: "🔨", catch: "言葉より、手を動かして答えを出す。",
+    desc: "ひとりの時間で気力を整え、使い慣れた道具や方法を大切にする旅人です。決めるときは筋道を重視し、進め方は取り組みながら決めることを好みます。",
+    good: ["使い慣れた道具や方法を大切にする", "筋道が通っているかを大切にする", "取り組みながら進め方を選ぶことを好む"],
+    care: ["困ったときは、早めに誰かに相談してみる", "長い予定は、区切りだけ先に決めておく", "気持ちの話を聞く時間も、ときどきつくる"],
+    fit: ["修理やものづくり", "道具を使う作業", "手を動かしながら考える活動"] },
+  QKHP: { name: "薬草師", e: "🌿", catch: "目立たなくても、誰かの役に立てたらうれしい。",
+    desc: "ひとりの時間で気力を整え、慣れたことを大切にする旅人です。決めるときは人の気持ちに目を向け、先に準備をしてから進めることを好みます。",
+    good: ["人の気持ちに目を向けて決める", "慣れたことを丁寧に続けることを大切にする", "先に準備をしてから進めることを好む"],
+    care: ["自分の意見も、少しずつ言葉にしてみる", "がんばった日は、休む時間を先に決めておく", "変化があるときは、小さく試してから慣れていく"],
+    fit: ["人を支える活動", "丁寧さを大切にする作業", "学んだ知識を人のために生かすこと"] },
+  QKHF: { name: "花守り", e: "🌷", catch: "小さな花の変化を、ゆっくり見守りたい。",
+    desc: "ひとりの時間で気力を整え、身近な楽しみを大切にする旅人です。決めるときは人の気持ちに目を向け、予定はその日の気分に合わせて選ぶことを好みます。",
+    good: ["人や自分の気持ちに目を向ける", "身近な楽しみを、くり返し味わうことを大切にする", "その日の気分に合わせて過ごすことを好む"],
+    care: ["言いたいことは、メモにしてから伝えてみる", "大事な予定だけは、先に決めておく", "嫌なことがあったら、ためこまずに書き出してみる"],
+    fit: ["植物や動物、自然とふれあうこと", "手しごとやデザイン", "人がほっとできる場づくり"] },
+};
+
+// ============================================================
+// 採点（画面から切りはなした計算だけの部分）
+// answers: 20個の数字（+2〜-2）
+// ============================================================
+// 境界域：各軸の合計点がこの値以下（-2〜+2点＝40〜60%）なら左右を決めない（仮の基準）
+const BOUNDARY = 2;
+
+function scoreAnswers(answers) {
+  const sums = [0, 0, 0, 0];
+  const nonNeutral = [0, 0, 0, 0];   // 各軸で「どちらともいえない」以外に答えた数
+  QUESTIONS.forEach((q, i) => {
+    sums[q.axis] += answers[i] * q.dir;
+    if (answers[i] !== 0) nonNeutral[q.axis]++;
+  });
+  const axes = sums.map((s, k) => {
+    const leftPct = 50 + s * 5;                       // -10〜+10 点を 0〜100% に
+    const boundary = Math.abs(s) <= BOUNDARY;
+    const side = boundary ? null : s > 0 ? "L" : "R";
+    // 中立の状態：all＝5問すべて中立（傾向が出ていない）、split＝答えたが向きが分かれて0点、none＝それ以外
+    const neutral = nonNeutral[k] === 0 ? "all" : s === 0 ? "split" : "none";
+    return { sum: s, leftPct, boundary, side, nonNeutral: nonNeutral[k], neutral };
+  });
+  const allNeutral = answers.every(a => a === 0);
+  // 境界ではない軸の条件に合う旅人だけを残す（境界の軸は左右どちらも可）
+  const candidateCodes = allNeutral ? [] : Object.keys(TYPES).filter(c =>
+    axes.every((a, k) => a.side === null || c[k] === AXES[k][a.side].c));
+  const code = candidateCodes.length === 1 ? candidateCodes[0] : null;
+  return { code, candidateCodes, axes, allNeutral };
+}
+
+// ============================================================
+// 結果の説明（判定の手がかり・今日試すこと）
+// ============================================================
+const AXIS_NOUN = ["気力の回復", "新しいことへの姿勢", "決めるときの視点", "進め方"];
+const TRY = [
+  { L: "気の合う人と、短く近況を話す時間をつくる", R: "ひとりで気持ちを整える時間を予定に入れる" },
+  { L: "気になっていたことを、小さく1つ試す", R: "慣れた楽しみを、ゆっくり味わう時間をつくる" },
+  { L: "迷っていることの判断基準を3つ書き出す", R: "選択肢ごとに、自分や関係する人の気持ちを整理する" },
+  { L: "明日やりたいことを3つ、順番とともに書く", R: "予定に、その場で選べる自由時間を残す" },
+];
+const TRY_DEFAULT = "今日、心地よかった過ごし方を一言だけメモしてみましょう。自分の傾向を知る手がかりになります。";
+
+// 各軸の「傾向の説明」と「根拠となる実際の回答」を返す
+// 回答の向き：answers[i] * dir がプラスなら左側、マイナスなら右側を支持（逆向きの質問に「そう思わない」も根拠になる）
+function buildResultInsights(answers, result) {
+  return result.axes.map((a, k) => {
+    const ax = AXES[k], noun = AXIS_NOUN[k];
+    const votes = QUESTIONS
+      .map((q, i) => ({ i, c: answers[i] * q.dir }))
+      .filter(x => QUESTIONS[x.i].axis === k && x.c !== 0)
+      .sort((x, y) => Math.abs(y.c) - Math.abs(x.c) || x.i - y.i)
+      .map(x => ({
+        no: x.i + 1,
+        q: QUESTIONS[x.i].t,
+        label: SCALE.find(s => s.v === answers[x.i]).label,
+        toward: x.c > 0 ? "L" : "R",
+        pole: (x.c > 0 ? ax.L : ax.R).name,
+      }));
+    const L = votes.filter(v => v.toward === "L"), R = votes.filter(v => v.toward === "R");
+    if (a.neutral === "all") {
+      return { k, kind: "neutral", text: `${noun}：今回は、この軸の傾向が出ていません`,
+        note: "5問すべて「どちらともいえない」でした。", evidence: [] };
+    }
+    if (!a.boundary) {
+      const text = `${noun}：${trendPhrase(a, k)}`;
+      return { k, kind: "side", text, note: "", evidence: (a.side === "L" ? L : R).slice(0, 2) };
+    }
+    if (L.length && R.length) {
+      return { k, kind: "both", text: `${noun}：今回は、${ax.L.name}と${ax.R.name}の両側に近い回答でした`,
+        note: a.neutral === "split"
+          ? "はっきり答えた質問もありましたが、向きが分かれて打ち消し合いました。左右は決めていません。"
+          : "両方向の回答があり、合計が真ん中に近い境界域に入ったため、左右は決めていません。",
+        evidence: [L[0], R[0]] };
+    }
+    const pole = (L.length ? ax.L : ax.R).name;
+    return { k, kind: "one", text: `${noun}：今回は、わずかに${pole}寄りの回答でしたが、傾向は小さめです`,
+      note: "ほかの質問は「どちらともいえない」でした。境界域のため、左右は決めていません。",
+      evidence: votes.slice(0, 2) };
+  });
+}
+
+// 今日、試してみること：境界ではない軸のうち、回答の偏りがいちばん大きい軸から1つ（同点なら表示順で先の軸）
+function pickTry(result) {
+  let best = null;
+  result.axes.forEach((a, k) => {
+    if (a.boundary) return;
+    if (best === null || Math.abs(a.sum) > Math.abs(result.axes[best].sum)) best = k;
+  });
+  if (best === null) return { text: TRY_DEFAULT, why: "" };
+  const a = result.axes[best], ax = AXES[best];
+  return { text: TRY[best][a.side],
+    why: `今回いちばん回答の偏りが大きかった「${ax.title}」（${ax[a.side].name}寄り）から選びました。` };
+}
+
+// 軸ごとの傾向の言い方（4つの軸の欄と、判定の手がかりで共通に使う）
+function trendPhrase(a, k) {
+  const ax = AXES[k], abs = Math.abs(a.sum);
+  if (a.neutral === "all") return "今回は、この軸の傾向が出ていません";
+  if (a.sum === 0) return "回答の向きが分かれ、合計は半々でした";
+  if (abs <= BOUNDARY) return "境界付近の回答でした";
+  const pole = ax[a.side].name;
+  return abs >= 6 ? `今回は、${pole}寄りの回答が目立ちました` : `今回は、やや${pole}寄りの回答でした`;
+}
+
+// 旅の仲間との関わり方：コードを1文字ずつ比べて、共通点・違い・相談のヒントを作る（相性の良し悪しは判定しない）
+const SHARED_TEXT = {
+  S: "人と過ごして気力を戻す方向", Q: "ひとりの時間で気力を戻す方向",
+  A: "新しいことへの関心", K: "慣れたものを大切にする方向",
+  L: "理由や筋道を大切にする方向", H: "人の気持ちに目を向ける方向",
+  P: "先に決めて進める方向", F: "進めながら決める方向",
+};
+const DIFF_TEXT = ["人との交流・ひとり時間の好み", "新しいもの・慣れたものの好み", "根拠と気持ちのどちらを優先しやすいか", "計画・即興の好み"];
+const PARTNER_HINT = [
+  "休憩や空き時間を、一緒に過ごすか別々に過ごすか、相談してみましょう。",
+  "慣れた楽しみと、新しく試したいことを、それぞれ挙げてみましょう。",
+  "何かを決めるときは、判断の条件と、関係する人の気持ちを両方整理してみましょう。",
+  "一緒に出かけるなら、先に決める範囲と、その場で選ぶ範囲を相談してみましょう。",
+];
+function buildPartnerHint(myCode, partnerCode) {
+  const same = [], diff = [];
+  for (let k = 0; k < 4; k++) (myCode[k] === partnerCode[k] ? same : diff).push(k);
+  return {
+    shared: same.length
+      ? same.map(k => SHARED_TEXT[myCode[k]]).join("と、") + "が共通しています。"
+      : "共通する軸はありません。4つの軸すべてで、好みや優先しやすい視点の向きが異なります。",
+    different: diff.length && diff.length < 4 ? diff.map(k => DIFF_TEXT[k]).join("と、") + "が異なります。" : "",
+    hints: diff.slice(0, 2).map(k => PARTNER_HINT[k]),
+  };
+}
+
+// 比べる旅人の選び方（順位ではない）：価値観（2・3文字目）が同じで、エネルギーと進め方（1・4文字目）が逆のタイプ
+function flip(code, idx) {
+  return code.split("").map((ch, i) => {
+    if (!idx.includes(i)) return ch;
+    const ax = AXES[i];
+    return ch === ax.L.c ? ax.R.c : ax.L.c;
+  }).join("");
+}
+function regionOf(code) { return REGIONS[code[1] + code[2]]; }
+
+// ============================================================
+// 画面
+// ============================================================
+const $ = id => document.getElementById(id);
+const answers = new Array(QUESTIONS.length).fill(null);
+let current = 0;
+let busy = false;
+
+function show(id) {
+  ["start", "quiz", "result"].forEach(s => { $(s).hidden = s !== id; });
+  window.scrollTo(0, 0);
+}
+
+// スタート画面の4つの軸
+$("axesIntro").innerHTML = AXES.map(a =>
+  `<div><b>${a.L.name} ↔ ${a.R.name}</b><span>${a.title}</span></div>`).join("");
+
+// 5つの丸ボタン
+$("dots").innerHTML = SCALE.map(s =>
+  `<button class="dot" type="button" data-v="${s.v}" aria-label="${s.label}" aria-pressed="false"></button>`).join("");
+$("dots").addEventListener("click", e => {
+  const b = e.target.closest(".dot");
+  if (!b || busy) return;
+  busy = true;
+  answers[current] = Number(b.dataset.v);
+  renderQuestion();
+  setTimeout(() => {
+    busy = false;
+    if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
+    else finish();
+  }, 260);
+});
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  $("qnum").textContent = `質問 ${current + 1} / ${QUESTIONS.length}`;
+  const done = answers.filter(a => a !== null).length;
+  const pct = Math.round(done / QUESTIONS.length * 100);
+  $("qpct").textContent = pct + "%";
+  $("qbar").style.width = pct + "%";
+  $("qtext").textContent = q.t;
+  const a = answers[current];
+  document.querySelectorAll(".dot").forEach(d => d.setAttribute("aria-pressed", String(a !== null && Number(d.dataset.v) === a)));
+  $("chosen").textContent = a === null ? "" : "選んだ答え：" + SCALE.find(s => s.v === a).label;
+  $("backBtn").disabled = current === 0;
+}
+
+$("startBtn").onclick = () => { cancelAI(); answers.fill(null); current = 0; renderQuestion(); show("quiz"); };
+$("backBtn").onclick = () => { if (current > 0 && !busy) { current--; renderQuestion(); } };
+$("homeBtn").onclick = () => { cancelAI(); show("start"); };
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+// レーダーチャート（8方向：向かい合う方向が同じ軸の両はし）
+function radarSVG(axes) {
+  const order = [[0, "L"], [1, "L"], [2, "L"], [3, "L"], [0, "R"], [1, "R"], [2, "R"], [3, "R"]];
+  const cx = 130, cy = 130, R = 88;
+  const pt = (i, r) => {
+    const ang = -Math.PI / 2 + i * Math.PI / 4;
+    return [cx + Math.cos(ang) * r, cy + Math.sin(ang) * r];
+  };
+  let g = "";
+  [25, 50, 75, 100].forEach(p => {
+    g += `<polygon class="grid${p === 100 ? " outer" : ""}" points="${order.map((_, i) => pt(i, R * p / 100).join(",")).join(" ")}"/>`;
+  });
+  order.forEach((_, i) => { const [x, y] = pt(i, R); g += `<line class="spoke" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`; });
+  const vals = order.map(([k, side]) => side === "L" ? axes[k].leftPct : 100 - axes[k].leftPct);
+  g += `<polygon class="area" points="${vals.map((v, i) => pt(i, R * v / 100).join(",")).join(" ")}"/>`;
+  vals.forEach((v, i) => { const [x, y] = pt(i, R * v / 100); g += `<circle class="pt" cx="${x}" cy="${y}" r="3.5"/>`; });
+  order.forEach(([k, side], i) => {
+    const [x, y] = pt(i, R + 22);
+    const on = axes[k].side === side ? "on" : "";
+    g += `<text class="${on}" x="${x}" y="${y + 4}" text-anchor="middle">${AXES[k][side].name}</text>`;
+  });
+  return `<svg class="radar" viewBox="0 0 260 260" role="img" aria-label="4つの軸のバランス">${g}</svg>`;
+}
+
+function partnerHTML(myCode, code, label) {
+  const h = buildPartnerHint(myCode, code);
+  return `<div class="partner" style="--tc:${regionOf(code).color}">
+    ${mateHTML(code, label)}
+    <dl>
+      <dt>共通するところ</dt><dd>${h.shared}</dd>
+      ${h.different ? `<dt>異なるところ</dt><dd>${h.different}</dd>` : ""}
+      ${h.hints.length ? `<dt>関わり方のヒント</dt><dd>${h.hints.join("<br>")}</dd>` : ""}
+    </dl></div>`;
+}
+
+function mateHTML(code, reason) {
+  const t = TYPES[code];
+  return `<button class="mate" type="button" data-code="${code}" style="--tc:${regionOf(code).color}">
+    <span class="mini">${t.e}</span>
+    <span><b>${t.name}</b>（${code}）<small>${reason}</small></span></button>`;
+}
+
+function finish() {
+  const r = scoreAnswers(answers);
+  const t = r.code ? TYPES[r.code] : null;
+  const n = r.candidateCodes.length;
+
+  // 色と風景：1タイプ、または候補が全部同じ地方ならその地方。ちがう地方にまたがるときは地図全体
+  const regKeys = [...new Set(r.candidateCodes.map(c => c[1] + c[2]))];
+  const reg = regKeys.length === 1 ? REGIONS[regKeys[0]] : null;
+  const tc = reg ? reg.color : "var(--gold)";
+  const scene = reg ? reg.img : "images/title.jpg";
+
+  const axisRows = r.axes.map((a, k) => {
+    const ax = AXES[k];
+    const width = Math.abs(a.leftPct - 50);
+    const leftOn = a.side === "L" ? ' style="color:var(--ink)"' : "";
+    const rightOn = a.side === "R" ? ' style="color:var(--ink)"' : "";
+    const phrase = trendPhrase(a, k);
+    const verdict = a.boundary
+      ? `<b>${phrase}</b><br><small>${ax.L.name}：${ax.L.desc}／${ax.R.name}：${ax.R.desc}</small>`
+      : `<b>${phrase}</b><br><small>${ax[a.side].name}：${ax[a.side].desc}</small>`;
+    // バーは真ん中から、元の点数がプラスなら左へ、マイナスなら右へのびる
+    return `<div class="axis">
+      <div class="names"><span${leftOn}><b>${ax.L.name}</b> ${ax.L.c}</span>
+        <span>${ax.title}</span>
+        <span${rightOn}>${ax.R.c} <b>${ax.R.name}</b></span></div>
+      <div class="split"><i style="left:${a.sum > 0 ? 50 - width : 50}%;width:${width}%"></i></div>
+      <div class="verdict">${verdict}</div>
+    </div>`;
+  }).join("");
+
+  const cell = code => {
+    const x = TYPES[code];
+    const me = code === r.code || (!r.code && r.candidateCodes.includes(code));
+    return `<button class="tcell${me ? " me" : ""}" type="button" data-code="${code}" style="--tc:${regionOf(code).color}">
+      <span class="e">${x.e}</span><span><b>${x.name}</b><small>${code}</small></span></button>`;
+  };
+  const allTypes = Object.entries(REGIONS).map(([key, g]) => {
+    const codes = Object.keys(TYPES).filter(c => c[1] + c[2] === key);
+    return `<div class="reg" style="--tc:${g.color}">
+      <div class="pic"><img src="${g.img}" alt="${g.name}の風景"><span class="pennant">${g.name}</span></div>
+      <p>${g.sub}</p>
+      <div class="types">${codes.map(cell).join("")}</div></div>`;
+  }).join("");
+
+  const axesCard = `
+    <div class="card">
+      <h3>回答から見えた4つの傾向</h3>
+      <div class="chart-wrap"><div class="radar-box">${radarSVG(r.axes)}<p class="hint">図は、今回の回答が各軸のどちらに寄ったかを表しています。能力の高さや、診断の正確さを示すものではありません。</p></div><div style="display:grid;gap:16px;min-width:0">${axisRows}</div></div>
+    </div>`;
+
+  // 今回の判定の手がかり（実際の回答をそのまま引用。折りたたみ）
+  const insights = buildResultInsights(answers, r);
+  const cluesCard = `
+    <div class="card">
+      <h3>今回の判定の手がかり</h3>
+      <p class="hint">押すと、その軸の手がかりになった実際の回答が見られます。</p>
+      ${insights.map(x => `<details class="clue"><summary>${x.text}</summary>
+        ${x.evidence.map(e => `<div class="quote"><p>「${esc(e.q)}」</p><p class="ans">→「${e.label}」<small>（${e.pole}側の手がかり）</small></p></div>`).join("")}
+        ${x.note ? `<p class="hint">${x.note}</p>` : ""}
+        ${x.kind !== "neutral" ? `<p class="hint">この軸は5問全体で集計しています。上記は、その手がかりとなった回答の一部です。</p>` : ""}
+      </details>`).join("")}
+    </div>`;
+  const tr = pickTry(r);
+  const tryCard = `
+    <div class="card">
+      <h3>今日、試してみること</h3>
+      <p class="try">${tr.text}</p>
+      ${tr.why ? `<p class="hint">${tr.why}</p>` : ""}
+    </div>`;
+
+  const aiCard = r.allNeutral ? `
+    <div class="card ai">
+      <h3>AIからあなたへのメッセージ</h3>
+      <p>今回はすべて中立の回答だったため、個別の傾向をもとにしたメッセージは作成していません。普段の具体的な場面を思い浮かべて、回答を振り返ってみてください。</p>
+    </div>` : `
+    <div class="card ai">
+      <h3>AIからあなたへのメッセージ</h3>
+      <p id="aiText" class="hint">20問の回答をもとに、AIがあなたへのメッセージを書きます。</p>
+      <div><button class="btn ghost" type="button" id="aiBtn">回答をもとにAIメッセージを作る</button></div>
+      <p class="hint" id="aiNote">メッセージの生成には、20問の回答を外部の生成サービスへ送信します。</p>
+    </div>`;
+
+  let top;
+  if (t) {
+    // 1タイプに決まった
+    // 冒険／安定と論理／共感は同じで、社交／内省と計画／即興が異なる旅人
+    const sharedAxesType = flip(r.code, [0, 3]);
+    // 4つの軸がすべて異なる旅人
+    const differentAxesType = flip(r.code, [0, 1, 2, 3]);
+    top = `
+    <div class="hero">
+      <div class="scene"><img src="${scene}" alt="${reg.name}の風景"></div>
+      <div class="badge">${t.e}</div>
+      <span class="label">あなたのタイプは</span>
+      <span class="pennant">${reg.name}</span>
+      <span class="sub">${reg.sub}</span>
+      <h2>${t.name}</h2>
+      <span class="code">${r.code}</span>
+      <p class="catch">${t.catch}</p>
+    </div>
+    ${axesCard}
+    ${cluesCard}
+    <div class="card"><h3>こんな旅人</h3><p>${t.desc}</p></div>
+    <div class="card two stack">
+      <div><h4>生かせそうな持ち味</h4><ul class="list">${t.good.map(s => `<li>${s}</li>`).join("")}</ul></div>
+      <div><h4>試してみたい工夫</h4><ul class="list">${t.care.map(s => `<li>${s}</li>`).join("")}</ul></div>
+      <div><h4>試してみたい役割・活動</h4><ul class="list">${t.fit.map(s => `<li>${s}</li>`).join("")}</ul></div>
+    </div>
+    <div class="card">
+      <h3>旅の仲間との関わり方</h3>
+      <p class="hint">合う・合わないを判定するものではなく、関わり方を考えるための比べ方の例です。共通点と違いを、関わり方を考えるヒントにできます。</p>
+      ${partnerHTML(r.code, sharedAxesType, "2つの軸が共通する旅人")}
+      ${partnerHTML(r.code, differentAxesType, "4つの軸が異なる旅人")}
+    </div>
+    ${tryCard}
+    ${aiCard}`;
+  } else if (n >= 2 && n <= 8) {
+    // 候補が2・4・8タイプ
+    const bAxes = r.axes.map((a, k) => a.boundary ? AXES[k] : null).filter(Boolean);
+    top = `
+    <div class="hero">
+      <div class="scene"><img src="${scene}" alt="${reg ? reg.name + "の風景" : "旅の地図"}"></div>
+      <div class="badge">🧭</div>
+      <span class="label">あなたの旅人は</span>
+      ${reg ? `<span class="pennant">${reg.name}</span>` : ""}
+      <h2>${n}タイプが候補です</h2>
+      <p class="catch">${bAxes.map(ax => `${ax.L.name}と${ax.R.name}`).join("、")}のあいだで、どちらとも決めきれない答えでした。</p>
+    </div>
+    <div class="card">
+      <h3>候補の旅人たち</h3>
+      <p class="note" style="text-align:left">並び順は順位ではありません。押すと、くわしい説明が見られます。</p>
+      <div style="display:grid;gap:14px">${r.candidateCodes.map(c => mateHTML(c, TYPES[c].catch)).join("")}</div>
+    </div>
+    <div class="card">
+      <h3>境界になった軸</h3>
+      <p>次の軸は、合計点が真ん中に近い「境界域」だったため、左右を決めていません。そのぶん候補が${n}つに分かれています。</p>
+      <ul class="list">${bAxes.map(ax => `<li><b>${ax.title}</b>（${ax.L.name}・${ax.R.name}）：今回の回答では、どちらとも決めていません</li>`).join("")}</ul>
+    </div>
+    ${axesCard}
+    ${cluesCard}
+    ${tryCard}
+    ${aiCard}`;
+  } else {
+    // 全4軸が境界（16候補）／全問中立
+    const title = r.allNeutral ? "今回は傾向が出ていません" : "今回は旅人を絞れませんでした";
+    const msg = r.allNeutral
+      ? "20問すべてが「どちらともいえない」だったため、今回は傾向が出ていません。少し時間をおいて、直感で答えてみると結果が出やすくなります。"
+      : "4つの軸すべてが、合計点が真ん中に近い境界域だったため、16タイプのどれにも絞れませんでした。今回の回答だけでは、どの方向にも決めていません。";
+    top = `
+    <div class="hero">
+      <div class="scene"><img src="images/title.jpg" alt="旅の地図"></div>
+      <div class="badge">🧭</div>
+      <h2>${title}</h2>
+    </div>
+    <div class="card"><p>${msg}</p></div>
+    ${axesCard}
+    ${cluesCard}
+    ${tryCard}
+    ${aiCard}`;
+  }
+
+  const res = $("result");
+  res.style.setProperty("--tc", tc);
+  res.innerHTML = `${top}
+    <div class="share">
+      <a class="btn" id="shareX" target="_blank" rel="noopener">結果をXでシェア</a>
+      <button class="btn ghost" type="button" id="retry">もう一度診断する</button>
+    </div>
+
+    <div class="orn">✦</div>
+    <div class="card">
+      <h3>4つの地方と16タイプの旅人たち</h3>
+      <div class="regions">${allTypes}</div>
+      <p class="note">タイプを押すと、くわしい説明が見られます。</p>
+    </div>
+    <p class="note">この診断は楽しむためのものです。人の性格は、日によっても場面によっても変わります。</p>`;
+
+  let text;
+  if (t) text = `私は「${t.name}」（${r.code}）タイプでした！\n${t.catch}`;
+  else if (n >= 2 && n <= 4) text = `私は${r.candidateCodes.map(c => `「${TYPES[c].name}」`).join("")}の${n}タイプが候補になりました！`;
+  else if (n === 8) text = `私は8タイプが候補になりました！`;
+  else text = `こころのコンパス診断をやってみました！`;
+  text += `\n#${HASHTAG}`;
+  $("shareX").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent(SITE_URL);
+  $("retry").onclick = () => { cancelAI(); show("start"); };
+  if ($("aiBtn")) $("aiBtn").onclick = () => askAI();
+  res.querySelectorAll("[data-code]").forEach(b => b.addEventListener("click", () => openType(b.dataset.code)));
+
+  show("result");
+}
+
+// タイプの詳しい説明（ポップアップ）
+function openType(code) {
+  const t = TYPES[code], reg = regionOf(code);
+  const d = $("dlg");
+  d.style.setProperty("--tc", reg.color);
+  d.innerHTML = `<div class="dlg">
+    <div class="dscene"><img src="${reg.img}" alt=""></div>
+    <div class="top"><span class="mini">${t.e}</span>
+      <div><span class="pennant">${reg.name}</span><h3>${t.name}</h3><span class="code">${code}</span></div></div>
+    <p class="catch">${t.catch}</p>
+    <p>${t.desc}</p>
+    <div><b>生かせそうな持ち味</b><ul class="list">${t.good.map(s => `<li>${s}</li>`).join("")}</ul></div>
+    <div><b>試してみたい工夫</b><ul class="list">${t.care.map(s => `<li>${s}</li>`).join("")}</ul></div>
+    <div><b>試してみたい役割・活動</b><ul class="list">${t.fit.map(s => `<li>${s}</li>`).join("")}</ul></div>
+    <button class="btn ghost" type="button" id="dlgClose">閉じる</button></div>`;
+  $("dlgClose").onclick = () => d.close();
+  d.showModal();
+}
+$("dlg").addEventListener("click", e => { if (e.target === $("dlg")) $("dlg").close(); });
+
+// ============================================================
+// AIメッセージ（ボタンを押したときだけ。20問の回答をそのまま送る）
+// ============================================================
+const aiCache = new Map();   // 同じ回答のメッセージは、ページを開いている間は使い回す
+let aiController = null;
+let aiRequestId = 0;         // 新しい診断や送信のたびに増やし、古い返事を表示しない
+
+function buildAIPayload(list) {
+  return {
+    schemaVersion: 2,
+    questionnaireVersion: QUESTIONNAIRE_VERSION,
+    answers: list.map((value, index) => ({ questionId: index + 1, value })),
+  };
+}
+
+function cancelAI() {
+  aiRequestId++;
+  if (aiController) { aiController.abort(); aiController = null; }
+}
+
+function showAIMessage(message) {
+  const el = $("aiText");
+  el.textContent = message;
+  el.className = "";
+  $("aiBtn").hidden = true;
+}
+
+async function askAI() {
+  const key = QUESTIONNAIRE_VERSION + ":" + answers.join(",");
+  if (aiCache.has(key)) { showAIMessage(aiCache.get(key)); return; }
+
+  cancelAI();
+  const myId = aiRequestId;
+  const ctrl = new AbortController();
+  aiController = ctrl;
+  const timer = setTimeout(() => ctrl.abort(), AI_TIMEOUT_MS);
+  const el = $("aiText"), btn = $("aiBtn");
+  btn.disabled = true;
+  btn.textContent = "メッセージを作っています…";
+  el.className = "hint";
+  el.textContent = "あなたの回答を読んで、メッセージを書いています。20秒ほどかかることがあります。";
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(buildAIPayload(answers)),
+      signal: ctrl.signal,
+    });
+    const data = await res.json();
+    if (!res.ok || !data.message) throw new Error(data.error || "error");
+    if (myId !== aiRequestId) return;          // その間に診断がやり直された
+    aiCache.set(key, data.message);
+    showAIMessage(data.message);
+  } catch (e) {
+    if (myId !== aiRequestId) return;
+    el.textContent = e.name === "AbortError"
+      ? "時間内にAIからのメッセージが届きませんでした。もう一度お試しください。"
+      : "AIからのメッセージを取得できませんでした。時間をおいて、もう一度お試しください。";
+    btn.disabled = false;
+    btn.textContent = "もう一度生成する";
+  } finally {
+    clearTimeout(timer);
+    if (aiController === ctrl) aiController = null;
+  }
+}
+</script>
+</body>
+</html>
